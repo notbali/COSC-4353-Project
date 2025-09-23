@@ -6,19 +6,72 @@ import {
   Fade,
   Button,
 } from "@mui/material";
-import { styled, keyframes } from "@mui/system";
+import { styled } from "@mui/system";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {TextField, MenuItem} from '@mui/material';
 // import { Dropdown } from '@mui/base/Dropdown';
 // import { MenuButton } from '@mui/base/MenuButton';
 // import { Menu } from '@mui/base/Menu';
-// import { MenuItem } from '@mui/base/MenuItem';
-
 
 const UserProfileMgmt = ({userId}) => {
+  // State to store user data
+  const [user, setUser] = useState({
+    name: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    zip: "",
+    skills: "",
+    preference: "",
+    availability: null,
+  });
+
+  // List of states
+  const states = [
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+  ];
+
   const navigate = useNavigate();
   const [checked] = useState(true);
-  const handleApply = () => {
+
+  // // Fetch user data from the backend
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     try {
+  //       const response = await axios.get(`http://localhost:4000/profile/${userId}`);
+  //       setUser(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching user data:", error);
+  //     }
+  //   };
+  //   fetchUserData();
+  // }, [userId]);
+
+  // Function to handle changes
+  const handleChange = (e) => {
+    setUser((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // Function to apply changes
+  // *Note this function will cause errors because the backend is not set up yet*
+  const handleApply = async e => {
+    e.preventDefault();
+    try{
+      axios.put(`http://localhost:4000/profile/${userId}`, user);
+      navigate(`/profile/${userId}`);
+    } catch (err) {
+      console.error("Error updating user data:", err);
+    }
+  };
+
+  // Function to cancel changes and go back to profile
+  const handleCancel = () => {
     navigate(`/profile/${userId}`);
   };
 
@@ -32,6 +85,8 @@ const UserProfileMgmt = ({userId}) => {
     },
     padding: "10px 30px",
     marginTop: "20px",
+    marginLeft: "5px",
+    marginRight: "5px",
     transition: "all 0.4s ease",
   }));
 
@@ -68,6 +123,9 @@ const UserProfileMgmt = ({userId}) => {
             <StyledButton variant="contained" onClick={handleApply}>
                 Apply
             </StyledButton>
+            <StyledButton variant="contained" onClick={handleCancel}>
+                Cancel
+            </StyledButton>
           </Typography>
           <Fade in={checked} timeout={600}>
             <Paper
@@ -78,35 +136,120 @@ const UserProfileMgmt = ({userId}) => {
                 backgroundColor: "#f5f5f5",
               }}
             >
-              <div>
-                <h2>
-                  <b>John Doe</b>
-                </h2>
-              </div>
-              <div>
-                  <b>Address 1:</b> 123 Main Street, Anytown, USA
-              </div>
-              <div>
-                  <b>Address 2:</b> 456 Elm Street, Anytown, USA
-              </div>
-              <div>
-                  <b>City:</b> Anytown
-              </div>
-              <div>
-                  <b>State:</b> TX
-              </div>
-              <div>
-                  <b>Zip Code:</b> 12345
-              </div>
-              <div>
-                  <b>Skills:</b> *List of skills*
-              </div>
-              <div>
-                  <b>Preferences:</b> *Paragraph*
-              </div>
-              <div>
-                  <b>Availability:</b> *Shows calendar of availability*
-              </div>
+              <Typography textAlign={"center"}>
+                <div style={{marginTop: "10px", marginBottom: "10px"}}>
+                  <TextField 
+                    id="name" 
+                    helperText="Max 50 characters"
+                    label="Full Name" 
+                    variant="outlined" 
+                    size="small"
+                    inputProps={{
+                      maxLength:50,
+                      onChange: handleChange,
+                      name: "name"
+                    }}
+                  />
+                </div>
+                <div style={{marginBottom: "10px"}}>
+                  <TextField 
+                    id="address1" 
+                    helperText="Max 100 characters"
+                    label="Address 1" 
+                    variant="outlined" 
+                    size="small"
+                    inputProps={{
+                      maxLength:100,
+                      onChange: handleChange,
+                      name: "address1"
+                    }}
+                  />
+                </div>
+                <div style={{marginBottom: "10px"}}>
+                  <TextField 
+                    id="address2" 
+                    helperText="Max 100 characters"
+                    label="Address 2" 
+                    variant="outlined" 
+                    size="small"
+                    inputProps={{
+                      maxLength:100,
+                      onChange: handleChange,
+                      name: "address2"
+                    }}
+                  />
+                </div>
+                <div style={{marginBottom: "10px"}}>
+                  <TextField 
+                    id="city" 
+                    helperText="Max 100 characters"
+                    label="City" 
+                    variant="outlined" 
+                    size="small"
+                    inputProps={{
+                      maxLength:100,
+                      onChange: handleChange,
+                      name: "city"
+                    }}
+                  />
+                </div>
+                <div style={{marginBottom: "10px"}}>
+                  <TextField
+                    id="state"
+                    helperText="Please select your state"
+                    select
+                    label="State"
+                    variant="outlined"
+                    size="small"
+                    onChange={handleChange}
+                    name="state"
+                  >
+                    {states.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </div>
+                <div style={{marginBottom: "10px"}}>
+                  <TextField 
+                    id="zip"
+                    helperText="Max 9, Min 5 characters" 
+                    label="Zip Code" 
+                    variant="outlined" 
+                    size="small"
+                    inputProps={{
+                      maxLength:9,
+                      minLength:5,
+                      onChange: handleChange,
+                      name: "zip"
+                    }}
+                  />
+                </div>
+                <div>
+                    <b>Skills:</b> *List of skills*
+                </div>
+                <div style={{marginBottom: "10px", marginLeft: "50px", marginRight: "50px"}}>
+                  <TextField 
+                    id="preferences" 
+                    helperText="Max 1000 characters"
+                    multiline
+                    rows={4}
+                    fullWidth
+                    label="Preferences" 
+                    variant="outlined" 
+                    size="small"
+                    inputProps={{
+                      maxLength:1000,
+                      onChange: handleChange,
+                      name: "preferences"
+                    }}
+                  />
+                </div>
+                <div>
+                    <b>Availability:</b> *Shows calendar of availability*
+                </div>
+              </Typography>
             </Paper>
           </Fade>
         </Paper>
