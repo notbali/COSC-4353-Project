@@ -10,9 +10,10 @@ import { styled } from "@mui/system";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {TextField, MenuItem} from '@mui/material';
-// import { Dropdown } from '@mui/base/Dropdown';
-// import { MenuButton } from '@mui/base/MenuButton';
-// import { Menu } from '@mui/base/Menu';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const UserProfileMgmt = ({userId}) => {
   // State to store user data
@@ -246,8 +247,24 @@ const UserProfileMgmt = ({userId}) => {
                     }}
                   />
                 </div>
-                <div>
-                    <b>Availability:</b> *Shows calendar of availability*
+                <div style={{display: "flex", justifyContent: "center", marginBottom: "10px"}}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DemoContainer components={['DatePicker']}>
+                      <DatePicker
+                        label="Date" 
+                        onChange={handleChange}
+                        slotProps={{
+                          textField: {
+                            id: "date",
+                            name: "date",
+                            helperText: "Please select a date",
+                            variant: "outlined",
+                            size: "small",
+                          }
+                        }}
+                      />
+                    </DemoContainer>
+                  </LocalizationProvider>
                 </div>
               </Typography>
             </Paper>
