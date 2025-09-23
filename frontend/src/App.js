@@ -12,6 +12,7 @@ import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import VolunteerMatchingForm from "./pages/VolunteerMatchingForm";
 import Profile from "./pages/Profile";
+import UserProfileMgmt from "./pages/UserProfileMgmt";
 import AdminDashboard from "./pages/AdminDashboard";
 import VolunteerReport from "./pages/VolunteerReport";
 import EventReport from "./pages/EventReport";
@@ -36,9 +37,9 @@ const theme = createTheme({
 });
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [userName, setUserName] = useState("");
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState("testId");
   const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
@@ -142,7 +143,9 @@ function App() {
               path="/volunteer-matching-form"
               element={<VolunteerMatchingForm />}
             />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<Profile userId={userId} isLoggedIn={isLoggedIn} />} />
+            <Route path="/profile/:userId" element={<Profile userId={userId} isLoggedIn={isLoggedIn} />} />
+            <Route path="/profile/:userId/edit" element={<UserProfileMgmt userId={userId} />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route
               path="/admin/reports/volunteer"
