@@ -6,15 +6,13 @@ import Navbar from "./component/Navbar";
 import Notification from "./pages/Notification";
 import Registration from "./pages/Registration";
 import VolunteerHistory from "./pages/VolunteerHistory";
-import EventMgmt from "./pages/EventMgmt";
-import EventList from "./pages/EventList";
+import EventManagementForm from "./pages/EventManagementForm";
 import Events from "./pages/Events";
-import EventDetails from "./pages/EventDetails";
+import EventDetail from "./pages/EventDetail";
+import EventList from "./pages/EventList";
 import VolunteerMatchingForm from "./pages/VolunteerMatchingForm";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
-import VolunteerReport from "./pages/VolunteerReport";
-import EventReport from "./pages/EventReport";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
@@ -24,7 +22,7 @@ const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          background: "#E2DAD6",
+          background: "#d3dce1ff",
           minHeight: "100vh",
           margin: 0,
           padding: 0,
@@ -92,9 +90,9 @@ function App() {
       <Router>
         <div>
           <Navbar
-            isLoggedIn={isLoggedIn}
-            userName={userName}
-            userRole={userRole}
+            isLoggedIn={true} // changed isLoggedIn={true} for testing
+            userName={"userName"}
+            userRole={"admin"}
             handleLogout={handleLogout}
           />
           <Routes>
@@ -114,9 +112,9 @@ function App() {
               path="/create-event"
               element={
                 isLoggedIn ? (
-                  <EventMgmt />
+                  <EventManagementForm />
                 ) : (
-                  <Login handleLoginState={handleLoginState} />
+                  <EventManagementForm handleLoginState={handleLoginState} /> // changed from Login to EventManagementForm for testin
                 )
               }
             />
@@ -126,14 +124,22 @@ function App() {
                 isLoggedIn ? (
                   <EventList />
                 ) : (
-                  <Login handleLoginState={handleLoginState} />
+                  <EventManagementForm handleLoginState={handleLoginState} /> // changed from Login to EventManagementForm for testing
                 )
               }
             />
-            <Route path="/event-list" element={<EventList />} />
-            <Route path="/events/:id" element={<EventDetails />} />
+            <Route
+              path="/event-list"
+              element={
+                isLoggedIn ? (
+                  <Events />
+                ) : (
+                  <Events handleLoginState={handleLoginState} />
+                )
+              }
+            />
+            <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/volunteer-history" element={<VolunteerHistory />} />
-
             <Route
               path="/notification"
               element={<Notification currentUser={userId} />}
@@ -144,11 +150,6 @@ function App() {
             />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route
-              path="/admin/reports/volunteer"
-              element={<VolunteerReport />}
-            />
-            <Route path="/admin/reports/events" element={<EventReport />} />
           </Routes>
         </div>
       </Router>
