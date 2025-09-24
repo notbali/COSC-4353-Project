@@ -90,9 +90,9 @@ function App() {
       <Router>
         <div>
           <Navbar
-            isLoggedIn={true} // changed isLoggedIn={true} for testing
-            userName={"userName"}
-            userRole={"admin"}
+            isLoggedIn={isLoggedIn}
+            userName={userName}
+            userRole={userRole}
             handleLogout={handleLogout}
           />
           <Routes>

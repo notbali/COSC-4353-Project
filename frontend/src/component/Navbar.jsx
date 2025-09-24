@@ -37,7 +37,7 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
 
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: "#d58e31ff" }}>
+      <AppBar position="static" sx={{ backgroundColor: "#1f5777ff" }}>
         <Toolbar>
           {/* Mobile Menu Button */}
           <Box sx={{ display: { xs: "flex", md: "none" }, marginRight: 2 }}>
@@ -74,7 +74,6 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
               variant="h6"
               sx={{
                 color: "#fff",
-                fontFamily: '"Pacifico", cursive',
                 fontWeight: 400,
                 fontSize: "1.5rem",
                 cursor: "pointer",
@@ -99,8 +98,8 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
               sx={{
                 color: "#fff",
                 marginRight: "10px",
-                backgroundColor: isActive("/") ? "#fab050ff" : "inherit",
-                "&:hover": { backgroundColor: "#fab050ff" },
+                backgroundColor: isActive("/") ? "#184b69ff" : "inherit",
+                "&:hover": { backgroundColor: "#184b69ff" },
                 fontWeight: isActive("/") ? "bold" : "normal",
               }}
             >
@@ -113,30 +112,32 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                   <>
                     <Button
                       component={Link}
-                      to="/event-mgmt"
+                      to="/event-management"
                       sx={{
                         color: "#fff",
                         marginRight: "10px",
-                        backgroundColor: isActive("/event-mgmt")
-                          ? "#fab050ff"
+                        backgroundColor: isActive("/event-management")
+                          ? "#184b69ff"
                           : "inherit",
-                        "&:hover": { backgroundColor: "#fab050ff" },
-                        fontWeight: isActive("/event-mgmt") ? "bold" : "normal",
+                        "&:hover": { backgroundColor: "#184b69ff" },
+                        fontWeight: isActive("/event-management")
+                          ? "bold"
+                          : "normal",
                       }}
                     >
                       Event Manager
                     </Button>
                     <Button
                       component={Link}
-                      to="/volunteer-matching"
+                      to="/volunteer-matching-form"
                       sx={{
                         color: "#fff",
                         marginRight: "10px",
-                        backgroundColor: isActive("/volunteer-matching")
-                          ? "#fab050ff"
+                        backgroundColor: isActive("/volunteer-matching-form")
+                          ? "#184b69ff"
                           : "inherit",
-                        "&:hover": { backgroundColor: "#fab050ff" },
-                        fontWeight: isActive("/volunteer-matching")
+                        "&:hover": { backgroundColor: "#184b69ff" },
+                        fontWeight: isActive("/volunteer-matching-form")
                           ? "bold"
                           : "normal",
                       }}
@@ -150,9 +151,9 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                         color: "#fff",
                         marginRight: "10px",
                         backgroundColor: isActive("/admin-dashboard")
-                          ? "#fab050ff"
+                          ? "#184b69ff"
                           : "inherit",
-                        "&:hover": { backgroundColor: "#7FA1C3" },
+                        "&:hover": { backgroundColor: "#184b69ff" },
                         fontWeight: isActive("/admin-dashboard")
                           ? "bold"
                           : "normal",
@@ -172,9 +173,9 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                         color: "#fff",
                         marginRight: "10px",
                         backgroundColor: isActive("/event-list")
-                          ? "#fab050ff"
+                          ? "#184b69ff"
                           : "inherit",
-                        "&:hover": { backgroundColor: "#7FA1C3" },
+                        "&:hover": { backgroundColor: "#184b69ff" },
                         fontWeight: isActive("/event-list") ? "bold" : "normal",
                       }}
                     >
@@ -187,9 +188,9 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                         color: "#fff",
                         marginRight: "10px",
                         backgroundColor: isActive("/volunteer-history")
-                          ? "#fab050ff"
+                          ? "#184b69ff"
                           : "inherit",
-                        "&:hover": { backgroundColor: "#7FA1C3" },
+                        "&:hover": { backgroundColor: "#184b69ff" },
                         fontWeight: isActive("/volunteer-history")
                           ? "bold"
                           : "normal",
@@ -204,9 +205,9 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                         color: "#fff",
                         marginRight: "10px",
                         backgroundColor: isActive("/notification")
-                          ? "#fab050ff"
+                          ? "#184b69ff"
                           : "inherit",
-                        "&:hover": { backgroundColor: "#7FA1C3" },
+                        "&:hover": { backgroundColor: "#184b69ff" },
                         fontWeight: isActive("/notification")
                           ? "bold"
                           : "normal",
@@ -232,9 +233,9 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                     color: "#fff",
                     marginRight: "10px",
                     backgroundColor: isActive("/profile")
-                      ? "#fab050ff"
+                      ? "#184b69ff"
                       : "inherit",
-                    "&:hover": { backgroundColor: "#fab050ff" },
+                    "&:hover": { backgroundColor: "#184b69ff" },
                     fontWeight: isActive("/profile") ? "bold" : "normal",
                   }}
                 >
@@ -246,7 +247,7 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                     color: "#fff",
                     fontWeight: "bold",
                     fontSize: "0.875rem",
-                    "&:hover": { backgroundColor: "#fab050ff" },
+                    "&:hover": { backgroundColor: "#184b69ff" },
                   }}
                 >
                   Logout
@@ -260,7 +261,7 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                   color: "#fff",
                   fontWeight: "bold",
                   fontSize: "0.875rem",
-                  "&:hover": { backgroundColor: "#fab050ff" },
+                  "&:hover": { backgroundColor: "#184b69ff" },
                 }}
               >
                 Login
@@ -302,7 +303,7 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                   </ListItem>
                   <ListItem
                     button
-                    onClick={() => handleNavigation("/volunteer-matching")}
+                    onClick={() => handleNavigation("/volunteer-matching-form")}
                   >
                     <ListItemText
                       primary="Volunteer Matching"

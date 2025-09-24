@@ -91,7 +91,7 @@ const Notification = ({ currentUser }) => {
                 marginBottom: "22px",
                 textAlign: "center",
                 fontWeight: "bold",
-                color: "#fab050ff",
+                color: "#1f5777ff",
               }}
             >
               Notifications
