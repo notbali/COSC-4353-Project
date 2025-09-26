@@ -222,54 +222,69 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
           </Box>
 
           {/* User Greeting and Login/Logout */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            {isLoggedIn ? (
-              <>
-                {/* Display User Name */}
-                <Button
-                  component={Link}
-                  to="/profile"
-                  sx={{
-                    color: "#fff",
-                    marginRight: "10px",
-                    backgroundColor: isActive("/profile")
-                      ? "#184b69ff"
-                      : "inherit",
-                    "&:hover": { backgroundColor: "#184b69ff" },
-                    fontWeight: isActive("/profile") ? "bold" : "normal",
-                  }}
-                >
-                  {/* Add a space between "Welcome," and the username */}
-                  Welcome,{"\u00A0"}
-                  <span style={{ fontWeight: 700 }}>{userName}</span>
-                </Button>
-                <Button
-                  onClick={handleLogout}
-                  sx={{
-                    color: "#fff",
-                    fontWeight: "bold",
-                    fontSize: "0.875rem",
-                    "&:hover": { backgroundColor: "#184b69ff" },
-                  }}
-                >
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <Button
-                component={Link}
-                to="/login"
-                sx={{
-                  color: "#fff",
-                  fontWeight: "bold",
-                  fontSize: "0.875rem",
-                  "&:hover": { backgroundColor: "#184b69ff" },
-                }}
-              >
-                Login
-              </Button>
-            )}
-          </Box>
+          {/* User Greeting and Login/Logout */}
+<Box sx={{ display: "flex", alignItems: "center" }}>
+  {isLoggedIn ? (
+    <>
+      {/* Display User Name */}
+      <Button
+        component={Link}
+        to="/profile"
+        sx={{
+          color: "#fff",
+          marginRight: "10px",
+          backgroundColor: isActive("/profile")
+            ? "#184b69ff"
+            : "inherit",
+          "&:hover": { backgroundColor: "#184b69ff" },
+          fontWeight: isActive("/profile") ? "bold" : "normal",
+        }}
+      >
+        Welcome,{"\u00A0"}
+        <span style={{ fontWeight: 700 }}>{userName}</span>
+      </Button>
+      <Button
+        onClick={handleLogout}
+        sx={{
+          color: "#fff",
+          fontWeight: "bold",
+          fontSize: "0.875rem",
+          "&:hover": { backgroundColor: "#184b69ff" },
+        }}
+      >
+        Logout
+      </Button>
+    </>
+  ) : (
+    <>
+      <Button
+        component={Link}
+        to="/login"
+        sx={{
+          color: "#fff",
+          fontWeight: "bold",
+          fontSize: "0.875rem",
+          "&:hover": { backgroundColor: "#184b69ff" },
+        }}
+      >
+        Login
+      </Button>
+      <Button
+        component={Link}
+        to="/registration"
+        sx={{
+          color: "#fff",
+          fontWeight: "bold",
+          fontSize: "0.875rem",
+          marginLeft: "10px",
+          "&:hover": { backgroundColor: "#184b69ff" },
+        }}
+      >
+        Sign Up
+      </Button>
+    </>
+  )}
+</Box>
         </Toolbar>
       </AppBar>
 

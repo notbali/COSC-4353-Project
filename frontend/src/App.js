@@ -150,6 +150,7 @@ function App() {
             />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/registration" element={<Registration />} />
           </Routes>
         </div>
       </Router>
