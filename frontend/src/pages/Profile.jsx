@@ -6,7 +6,7 @@ import {
   Fade,
   Button,
 } from "@mui/material";
-import { styled, keyframes } from "@mui/system";
+import { styled } from "@mui/system";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -14,14 +14,28 @@ const Profile = ({userId,isLoggedIn}) => {
   const navigate = useNavigate();
   const [checked] = useState(true);
 
+  // // State to store user data
+  // const [user, setUser] = useState(null);
+
   // Check if the user is logged in
   useEffect(() => {
     if (!isLoggedIn) {
       navigate("/login");
     } else {
       navigate(`/profile/${userId}`);
+      
+      // // Fetch user data from the backend
+      // const fetchUserData = async () => {
+      //   try {
+      //     const response = await axios.get(`http://localhost:4000/profile/${userId}`);
+      //     setUser(response.data);
+      //   } catch (error) {
+      //     console.error("Error fetching user data:", error);
+      //   }
+      // };
+      // fetchUserData();
     }
-  }, [isLoggedIn, navigate]);
+  }, [userId,isLoggedIn, navigate]);
 
   // Function to navigate to the edit page
   const handleEdit = () => {
@@ -30,11 +44,11 @@ const Profile = ({userId,isLoggedIn}) => {
 
   // Styled components for edit button
   const StyledButton = styled(Button)(({ theme }) => ({
-    backgroundColor: "#3183d5ff",
+    backgroundColor: "#4285F4",
     color: "#ffffff",
     "&:hover": {
       backgroundColor: "#d6d7e2ff",
-      color: "#3183d5ff",
+      color: "#4285F4",
     },
     padding: "10px 30px",
     marginTop: "20px",
@@ -62,7 +76,7 @@ const Profile = ({userId,isLoggedIn}) => {
               marginBottom: "0px",
               textAlign: "center",
               fontWeight: "bold",
-              color: "#fab050ff",
+              color: "#184b69ff",
             }} 
           >
             Profile
@@ -86,32 +100,49 @@ const Profile = ({userId,isLoggedIn}) => {
             >
               <div>
                 <h2>
+                  {/* <b>{user.name}</b> */}
                   <b>John Doe</b>
                 </h2>
               </div>
               <div>
-                  <b>Address 1:</b> 123 Main Street, Anytown, USA
+                  <b>Address 1: </b> 
+                  123 Main Street, Anytown, USA
+                  {/* <b>{user.address1}</b> */}
               </div>
               <div>
-                  <b>Address 2:</b> 456 Elm Street, Anytown, USA
+                  <b>Address 2: </b> 
+                  456 Elm Street, Anytown, USA
+                  {/* <b>{user.address2}</b> */}
               </div>
               <div>
-                  <b>City:</b> Anytown
+                  <b>City: </b> 
+                  Anytown
+                  {/* <b>{user.city}</b> */}
               </div>
               <div>
-                  <b>State:</b> TX
+                  <b>State: </b> 
+                  TX
+                  {/* <b>{user.state}</b> */}
               </div>
               <div>
-                  <b>Zip Code:</b> 12345
+                  <b>Zip Code: </b> 
+                  12345
+                  {/* <b>{user.zip}</b> */}
               </div>
               <div>
-                  <b>Skills:</b> *List of skills*
+                  <b>Skills: </b> 
+                  *List of skills*
+                  {/* <b>{user.skills}</b> */}
               </div>
               <div>
-                  <b>Preferences:</b> *Paragraph*
+                  <b>Preferences: </b> 
+                  *Paragraph*
+                  {/* <b>{user.preferences}</b> */}
               </div>
               <div>
-                  <b>Availability:</b> *Shows calendar of availability*
+                  <b>Availability: </b> 
+                  *Shows calendar of availability*
+                  {/* <b>{user.availability}</b> */}
               </div>
             </Paper>
           </Fade>
