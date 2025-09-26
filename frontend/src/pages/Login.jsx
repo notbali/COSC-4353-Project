@@ -1,15 +1,71 @@
 import React, { useState } from "react";
+import {
+  Container,
+  Button,
+  Typography,
+  TextField,
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Paper,
+  Collapse,
+  Fade,
+  CircularProgress,
+} from "@mui/material";
+import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
+
+const StyledCard = styled(Card)({
+  background: "#f5f5f5",
+  boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+  borderRadius: "15px",
+  padding: "20px",
+  maxWidth: "500px",
+  margin: "auto",
+  transition: "all 0.3s ease",
+});
+
+const StyledButton = styled(Button)({
+  backgroundColor: "#184b69ff",
+  color: "#ffffff",
+  fontWeight: "bold",
+  padding: "10px 20px",
+  transition: "transform 0.2s ease",
+  "&:hover": {
+    backgroundColor: "#1f5777ff",
+    transform: "scale(1.03)",
+  },
+});
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!username) newErrors.username = "Username is required.";
+    if (!password) newErrors.password = "Password is required.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add authentication logic here
-    //alert(`Username: ${username}\nPassword: ${password}`);
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    // Simulate authentication delay
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setLoginSuccess(true);
+      setTimeout(() => setLoginSuccess(false), 3000);
+    }, 1500);
   };
 
   const handleSignup = () => {
@@ -17,81 +73,106 @@ function Login() {
   };
 
   const handleGoogleSignIn = () => {
-    // Temporary placeholder for Google Sign-In
     alert("Google Sign-In coming soon!");
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #c7bb51ff 0%, #2193b0 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div style={{ maxWidth: 400, width: "100%", padding: 24, border: "1px solid #000000ff", borderRadius: 8, background: "#fff" }}>
-        <h2 style={{ textAlign: "center" }}>Welcome Back!</h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label>
-              Username:
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={{ width: "100%", padding: 8, marginTop: 4, marginLeft: -10 }}
-                required
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label>
-              Password:
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ width: "100%", padding: 8, marginTop: 4, marginLeft: -10 }}
-                required
-              />
-            </label>
-          </div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-            <button type="submit" style={{ flex: 1, padding: 10, marginLeft: 10 }}>Login</button>
-            <button type="button" style={{ flex: 1, padding: 10, marginLeft: 10 }} onClick={handleSignup}>Sign Up</button>
-          </div>
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            style={{
-              width: "100%",
-              padding: 10,
-              background: "#4285F4",
-              color: "#fff",
-              border: "none",
-              borderRadius: 4,
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 48 48" style={{ marginRight: 8 }}>
-              <g>
-                <path fill="#4285F4" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.3-5.7 7-11.3 7-6.6 0-12-5.4-12-12s5.4-12 12-12c2.6 0 5 .8 7 2.3l5.7-5.7C33.5 5.1 28.9 3 24 3 12.9 3 4 11.9 4 23s8.9 20 20 20c11 0 20-8.9 20-20 0-1.3-.1-2.7-.4-4z"/>
-                <path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.5 16.1 18.9 13 24 13c2.6 0 5 .8 7 2.3l5.7-5.7C33.5 5.1 28.9 3 24 3c-7.2 0-13.4 4.1-16.7 10.1z"/>
-                <path fill="#FBBC05" d="M24 43c5.4 0 10-1.8 13.7-4.9l-6.3-5.2c-2 1.4-4.5 2.1-7.4 2.1-5.5 0-10.2-3.7-11.8-8.7l-6.6 5.1C7.9 39.1 15.4 43 24 43z"/>
-                <path fill="#EA4335" d="M43.6 20.5h-1.9V20H24v8h11.3c-0.7 2-2.1 3.7-3.9 4.9l6.3 5.2C41.8 38.2 44 31.2 44 24c0-1.3-.1-2.7-.4-4z"/>
-              </g>
-            </svg>
-            Sign in with Google
-          </button>
-        </form>
-      </div>
-    </div>
+    <Container sx={{ mt: 8, mb: 8 }}>
+      <Fade in={true} timeout={600}>
+        <StyledCard>
+          <CardContent>
+            <Typography
+              variant="h4"
+              align="center"
+              gutterBottom
+              sx={{ mb: 4, color: "#184b69ff", fontWeight: "bold" }}
+            >
+              Welcome Back!
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    fullWidth
+                    error={!!errors.username}
+                    helperText={errors.username}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    fullWidth
+                    error={!!errors.password}
+                    helperText={errors.password}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <StyledButton
+                    type="submit"
+                    fullWidth
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      "Login"
+                    )}
+                  </StyledButton>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Button
+                    onClick={handleSignup}
+                    fullWidth
+                    variant="outlined"
+                    sx={{ fontWeight: "bold", height: "100%" }}
+                  >
+                    Sign Up
+                  </Button>
+                </Grid>
+                <Grid item xs={12}>
+                  <Button
+                    onClick={handleGoogleSignIn}
+                    fullWidth
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "#4285F4",
+                      color: "#fff",
+                      fontWeight: "bold",
+                      "&:hover": { backgroundColor: "#357ae8" },
+                    }}
+                  >
+                    Sign in with Google
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+            <Collapse in={loginSuccess}>
+              <Paper
+                elevation={2}
+                sx={{
+                  mt: 4,
+                  p: 2,
+                  backgroundColor: "#4CAF50",
+                  color: "#ffffff",
+                }}
+              >
+                <Typography variant="body1" align="center">
+                  Login successful!
+                </Typography>
+              </Paper>
+            </Collapse>
+          </CardContent>
+        </StyledCard>
+      </Fade>
+    </Container>
   );
 }
 

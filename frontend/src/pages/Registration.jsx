@@ -1,98 +1,197 @@
 import React, { useState } from "react";
+import {
+  Container,
+  Button,
+  Typography,
+  TextField,
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Paper,
+  Collapse,
+  Fade,
+  CircularProgress,
+} from "@mui/material";
+import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
+
+const StyledCard = styled(Card)({
+  background: "#f5f5f5",
+  boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+  borderRadius: "15px",
+  padding: "20px",
+  maxWidth: "500px",
+  margin: "auto",
+  transition: "all 0.3s ease",
+});
+
+const StyledButton = styled(Button)({
+  backgroundColor: "#184b69ff",
+  color: "#ffffff",
+  fontWeight: "bold",
+  padding: "10px 20px",
+  transition: "transform 0.2s ease",
+  "&:hover": {
+    backgroundColor: "#1f5777ff",
+    transform: "scale(1.03)",
+  },
+});
 
 function Registration() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!username) newErrors.username = "Username is required.";
+    if (!email) newErrors.email = "Email is required.";
+    if (!password) newErrors.password = "Password is required.";
+    if (password !== confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-    // Add registration logic here
-    alert(`Registered:\nUsername: ${username}\nEmail: ${email}`);
-    navigate("/login");
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    // Simulate registration delay
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setRegistrationSuccess(true);
+
+      // Reset form
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+
+      setTimeout(() => {
+        setRegistrationSuccess(false);
+        navigate("/login");
+      }, 3000);
+    }, 1500);
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #c7bb51ff 0%, #2193b0 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div style={{ maxWidth: 400, width: "100%", padding: 24, border: "1px solid #000000ff", borderRadius: 8, background: "#fff" }}>
-        <h2 style={{ textAlign: "center" }}>Create Account</h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label>
-              Username:
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={{ width: "100%", padding: 8, marginTop: 4, marginLeft: -10 }}
-                required
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label>
-              Email:
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ width: "100%", padding: 8, marginTop: 4, marginLeft: -10 }}
-                required
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label>
-              Password:
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ width: "100%", padding: 8, marginTop: 4, marginLeft: -10 }}
-                required
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label>
-              Confirm Password:
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                style={{ width: "100%", padding: 8, marginTop: 4, marginLeft: -10 }}
-                required
-              />
-            </label>
-          </div>
-          <button type="submit" style={{ width: "100%", padding: 10 }}>Register</button>
-        </form>
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-          <button
-            type="button"
-            style={{ background: "none", border: "none", color: "#2193b0", cursor: "pointer", textDecoration: "underline" }}
-            onClick={() => navigate("/login")}
-          >
-            Already have an account? Login
-          </button>
-        </div>
-      </div>
-    </div>
+    <Container sx={{ mt: 8, mb: 8 }}>
+      <Fade in={true} timeout={600}>
+        <StyledCard>
+          <CardContent>
+            <Typography
+              variant="h4"
+              align="center"
+              gutterBottom
+              sx={{ mb: 4, color: "#184b69ff", fontWeight: "bold" }}
+            >
+              Create Account
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    fullWidth
+                    error={!!errors.username}
+                    helperText={errors.username}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    fullWidth
+                    error={!!errors.email}
+                    helperText={errors.email}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    fullWidth
+                    error={!!errors.password}
+                    helperText={errors.password}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Confirm Password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    fullWidth
+                    error={!!errors.confirmPassword}
+                    helperText={errors.confirmPassword}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <StyledButton
+                    type="submit"
+                    fullWidth
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      "Register"
+                    )}
+                  </StyledButton>
+                </Grid>
+                <Grid item xs={12} textAlign="center">
+                  <Button
+                    onClick={() => navigate("/login")}
+                    variant="text"
+                    sx={{
+                      color: "#2193b0",
+                      textDecoration: "underline",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Already have an account? Login
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+            <Collapse in={registrationSuccess}>
+              <Paper
+                elevation={2}
+                sx={{
+                  mt: 4,
+                  p: 2,
+                  backgroundColor: "#4CAF50",
+                  color: "#ffffff",
+                }}
+              >
+                <Typography variant="body1" align="center">
+                  Registration successful! Redirecting to login...
+                </Typography>
+              </Paper>
+            </Collapse>
+          </CardContent>
+        </StyledCard>
+      </Fade>
+    </Container>
   );
 }
 
