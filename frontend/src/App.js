@@ -12,6 +12,7 @@ import EventDetail from "./pages/EventDetail";
 import EventList from "./pages/EventList";
 import VolunteerMatchingForm from "./pages/VolunteerMatchingForm";
 import Profile from "./pages/Profile";
+import UserProfileMgmt from "./pages/UserProfileMgmt";
 import AdminDashboard from "./pages/AdminDashboard";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -148,7 +149,10 @@ function App() {
               path="/volunteer-matching-form"
               element={<VolunteerMatchingForm />}
             />
-            <Route path="/profile" element={<Profile />} />
+            {/* Change the userId and isLoggedIn value to test */}
+            <Route path="/profile" element={<Profile userId={userId} isLoggedIn={isLoggedIn} />} />
+            <Route path="/profile/:userId" element={<Profile userId={userId} isLoggedIn={isLoggedIn} />} />
+            <Route path="/profile/:userId/edit" element={<UserProfileMgmt userId={userId} />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/registration" element={<Registration />} />
           </Routes>
