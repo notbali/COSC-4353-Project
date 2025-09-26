@@ -14,7 +14,7 @@ import {
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 
-const logoPath = process.env.PUBLIC_URL + "logo192.png";
+const logoPath = process.env.PUBLIC_URL + "logo.png";
 
 const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -239,7 +239,9 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                     fontWeight: isActive("/profile") ? "bold" : "normal",
                   }}
                 >
-                  Welcome, <span style={{ fontWeight: 700 }}>{userName}</span>
+                  {/* Add a space between "Welcome," and the username */}
+                  Welcome,{"\u00A0"}
+                  <span style={{ fontWeight: 700 }}>{userName}</span>
                 </Button>
                 <Button
                   onClick={handleLogout}
