@@ -98,7 +98,7 @@ const Homepage = ({ userRole, isLoggedIn }) => {
       },
       {
         title: "Volunteer Matching",
-        path: "/volunteer-matching",
+        path: "/volunteer-matching-form",
         description:
           "Match volunteers with events based compatability with their skills and availability.",
       },
