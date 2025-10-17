@@ -54,19 +54,39 @@ function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
+  setErrors({});
 
-    // Simulate authentication delay
-    setTimeout(() => {
-      setIsSubmitting(false);
+  try {
+    const response = await fetch('http://localhost:5001/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.token) {
       setLoginSuccess(true);
-      setTimeout(() => setLoginSuccess(false), 3000);
-    }, 1500);
-  };
+      // Optionally store the token
+      localStorage.setItem('token', data.token);
+      setTimeout(() => {
+        setLoginSuccess(false);
+        navigate('/'); // Redirect after login
+      }, 1500);
+    } else {
+      setErrors({ general: data.message || 'Login failed' });
+      setIsSubmitting(false);
+    }
+  } catch (error) {
+    setErrors({ general: 'Network error' });
+    setIsSubmitting(false);
+  }
+};
 
   const handleSignup = () => {
     navigate("/registration");

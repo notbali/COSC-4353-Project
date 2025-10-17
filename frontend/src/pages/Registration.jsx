@@ -59,29 +59,29 @@ function Registration() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-
-    // Simulate registration delay
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setRegistrationSuccess(true);
-
-      // Reset form
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-
-      setTimeout(() => {
-        setRegistrationSuccess(false);
-        navigate("/login");
-      }, 3000);
-    }, 1500);
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (password !== confirmPassword) {
+    alert("Passwords do not match!");
+    return;
+  }
+  try {
+    const response = await fetch('http://localhost:5001/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+    });
+    const data = await response.json();
+    if (response.ok) {
+      alert("Registration successful! Please log in.");
+      navigate("/login");
+    } else {
+      alert(data.message || "Registration failed.");
+    }
+  } catch (error) {
+    alert("Network error.");
+  }
+};
 
   return (
     <Container sx={{ mt: 8, mb: 8 }}>
