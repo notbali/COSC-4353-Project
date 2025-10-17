@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@mui/x-date-pickers": "^8.14.1",
+    "jest": "^30.2.0"
+  }
+}
