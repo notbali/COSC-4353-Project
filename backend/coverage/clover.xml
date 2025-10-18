@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1760753213727" clover="3.2.0">
-  <project timestamp="1760753213727" name="All files">
+<coverage generated="1760753690301" clover="3.2.0">
+  <project timestamp="1760753690301" name="All files">
     <metrics statements="77" coveredstatements="73" conditionals="42" coveredconditionals="42" methods="6" coveredmethods="6" elements="125" coveredelements="121" complexity="0" loc="77" ncloc="77" packages="1" files="2" classes="2"/>
     <file name="auth.js" path="C:\Users\bradl\OneDrive\Desktop\School Stuff\UH\COSC 4353 Software Design\Project\COSC-4353-Project\backend\routes\auth.js">
       <metrics statements="38" coveredstatements="38" conditionals="30" coveredconditionals="30" methods="2" coveredmethods="2"/>
