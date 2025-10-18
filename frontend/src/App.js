@@ -149,7 +149,6 @@ function App() {
               path="/volunteer-matching-form"
               element={<VolunteerMatchingForm />}
             />
-            {/* Change the userId and isLoggedIn value to test */}
             <Route path="/profile" element={<Profile userId={userId} isLoggedIn={isLoggedIn} />} />
             <Route path="/profile/:userId" element={<Profile userId={userId} isLoggedIn={isLoggedIn} />} />
             <Route path="/profile/:userId/edit" element={<UserProfileMgmt userId={userId} />} />
