@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.14% </span>
+                <span class="strong">91.83% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>28/49</span>
+                <span class='fraction'>45/49</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">41.93% </span>
+                <span class="strong">80.64% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>13/31</span>
+                <span class='fraction'>25/31</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">62.5% </span>
+                <span class="strong">87.5% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/8</span>
+                <span class='fraction'>7/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.11% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>22/36</span>
+                <span class='fraction'>36/36</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -135,16 +135,16 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -158,18 +158,18 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -189,17 +189,17 @@ router.get('/match/:volunteerId', async (req, res) =&gt; {
 &nbsp;
     const events = Event._inMemory;
  
-    const matching = events.filter(<span class="fstat-no" title="function not covered" >(e</span>v) =&gt; {
-<span class="cstat-no" title="statement not covered" >        if (!ev.reqSkills) <span class="cstat-no" title="statement not covered" >return false;</span></span>
-        const skillMatch = <span class="cstat-no" title="statement not covered" >volunteer.skills &amp;&amp; volunteer.skills.includes(ev.reqSkills);</span>
-<span class="cstat-no" title="statement not covered" >        if (!skillMatch) <span class="cstat-no" title="statement not covered" >return false;</span></span>
-<span class="cstat-no" title="statement not covered" >        if (volunteer.availability.length === 0) <span class="cstat-no" title="statement not covered" >return true;</span></span>
-<span class="cstat-no" title="statement not covered" >        currentDate = new Date().toISOString().split('T')[0];</span>
-<span class="cstat-no" title="statement not covered" >        if (ev.eventDateISO &lt; currentDate) <span class="cstat-no" title="statement not covered" >return false;</span></span>
-<span class="cstat-no" title="statement not covered" >        return volunteer.availability.includes(ev.eventDateISO);</span>
+  const matching = events.filter((ev) =&gt; {
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!ev.requiredSkills) <span class="cstat-no" title="statement not covered" >return false;</span>
+    const skillMatch = volunteer.skills &amp;&amp; volunteer.skills.includes(ev.requiredSkills);
+        if (!skillMatch) return false;
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (volunteer.availability.length === 0) <span class="cstat-no" title="statement not covered" >return true;</span>
+        currentDate = new Date().toISOString().split('T')[0];
+        if (ev.eventDateISO &lt; currentDate) return false;
+        return volunteer.availability.includes(ev.eventDateISO);
   });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return res.status(200).json(matching);</span>
+  return res.status(200).json(matching);
 });
 &nbsp;
 // Match Volunteer to Event
@@ -213,18 +213,18 @@ router.post('/match', (req, res) =&gt; {
   if (!volunteer) return res.status(404).json({ message: 'Volunteer not found' });
 &nbsp;
   const idEvent = Number(eventId);
-  const event = Event._inMemory &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >Event._inMemory.find(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >Number(e.id) === idEvent)</span>;</span>
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (!event) return res.status(404).json({ message: 'Event not found' });
+  const event = Event._inMemory &amp;&amp; Event._inMemory.find((e) =&gt; Number(e.id) === idEvent);
+  if (!event) return res.status(404).json({ message: 'Event not found' });
 &nbsp;
   // set matched info on the in-memory event
-<span class="cstat-no" title="statement not covered" >  event.matchedVolunteer = volunteer.id || volunteer;</span>
-<span class="cstat-no" title="statement not covered" >  event.matchedVolunteerName = volunteer.name || null;</span>
-<span class="cstat-no" title="statement not covered" >  event.matchedAt = new Date().toISOString();</span>
+  event.matchedVolunteer = volunteer.id || <span class="branch-1 cbranch-no" title="branch not covered" >volunteer;</span>
+  event.matchedVolunteerName = volunteer.name || <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+  event.matchedAt = new Date().toISOString();
 &nbsp;
-  const match = <span class="cstat-no" title="statement not covered" >{ id: matches.length + 1, volunteerId, eventId, createdAt: new Date() };</span>
-<span class="cstat-no" title="statement not covered" >  matches.push(match);</span>
+  const match = { id: matches.length + 1, volunteerId, eventId, createdAt: new Date() };
+  matches.push(match);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return res.status(201).json({ match, event });</span>
+  return res.status(201).json({ match, event });
 });
 &nbsp;
 module.exports = router;
@@ -235,7 +235,7 @@ module.exports = router;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-18T03:39:29.727Z
+                at 2025-10-18T04:02:08.988Z
             </div>
         <script src="../prettify.js"></script>
         <script>

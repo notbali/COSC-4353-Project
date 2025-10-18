@@ -76,9 +76,9 @@ const VolunteerHistory = () => {
                   {futureEvents.map((event, index) => (
                     <tr key={index}>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDesc}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.reqSkills}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDate}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.matchedVolunteerName || 'Unassigned'}</td>
@@ -110,9 +110,9 @@ const VolunteerHistory = () => {
                   {pastEvents.map((event, index) => (
                     <tr key={index}>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDesc}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.reqSkills}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDate}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.matchedVolunteerName || 'No Volunteer'}

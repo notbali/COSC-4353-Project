@@ -14,9 +14,9 @@ router.get('/match/:volunteerId', async (req, res) => {
 
     const events = Event._inMemory;
  
-    const matching = events.filter((ev) => {
-        if (!ev.reqSkills) return false;
-        const skillMatch = volunteer.skills && volunteer.skills.includes(ev.reqSkills);
+  const matching = events.filter((ev) => {
+    if (!ev.requiredSkills) return false;
+    const skillMatch = volunteer.skills && volunteer.skills.includes(ev.requiredSkills);
         if (!skillMatch) return false;
         if (volunteer.availability.length === 0) return true;
         currentDate = new Date().toISOString().split('T')[0];

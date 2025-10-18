@@ -16,15 +16,15 @@ describe('Match Routes - Full Coverage', () => {
     const res = await request(app).get('/api/match/1');
     const currentDate = new Date().toISOString().split('T')[0];
     res.body.forEach(event => {
-      expect(event.eventDate >= currentDate).toBe(true);
+      expect(event.eventDateISO >= currentDate).toBe(true);
     });
   });
   it('should not return events that do not match volunteer skills', async () => {
     const res = await request(app).get('/api/match/2');
     expect(res.statusCode).toBe(200);
     res.body.forEach(event => {
-      expect(event.reqSkills).toBeDefined();
-      expect(event.reqSkills).toBe('Transportation');
+      expect(event.requiredSkills).toBeDefined();
+      expect(event.requiredSkills).toBe('Transportation');
     });
   });
     it('should return 400 if volunteerId or eventId is missing', async () => {

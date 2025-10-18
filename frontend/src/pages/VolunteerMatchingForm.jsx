@@ -181,9 +181,9 @@ const VolunteerMatchingForm = () => {
                   gap={1}
                 >
                   <Typography variant="subtitle1"><b>{event.eventName}</b></Typography>
-                  <Typography variant="body2"><b>Description:</b> {event.eventDesc}</Typography>
+                  <Typography variant="body2"><b>Description:</b> {event.eventDescription}</Typography>
                   <Typography variant="body2"><b>Location:</b> {event.location}</Typography>
-                  <Typography variant="body2"><b>Required Skills:</b> {event.reqSkills}</Typography>
+                  <Typography variant="body2"><b>Required Skills:</b> {event.requiredSkills}</Typography>
                   <Typography variant="body2"><b>Urgency:</b> {event.urgency}</Typography>
                   <Typography variant="body2"><b>Date:</b> {event.eventDate}</Typography>
                   <Box mt={1}>

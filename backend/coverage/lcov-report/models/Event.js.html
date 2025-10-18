@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.15% </span>
+                <span class="strong">84.61% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/13</span>
+                <span class='fraction'>11/13</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.15% </span>
+                <span class="strong">84.61% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/13</span>
+                <span class='fraction'>11/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -237,30 +237,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -362,7 +362,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const mongoose = require("mongoose");
 //const Match = require("./Match");
 const Notifs = require("./Notifs");
@@ -374,7 +374,7 @@ const eventSchema = new mongoose.Schema(
     location: { type: String, required: true },
     requiredSkills: [{ type: String, required: true }],
     urgency: { type: String, required: true },
-    eventDate: { type: Date, required: true },
+    eventDate: { type: Date, required: false },
     eventDateISO: String,
   },
   {
@@ -386,9 +386,9 @@ const eventSchema = new mongoose.Schema(
 eventSchema.pre(
   "deleteOne",
   { document: true, query: false },
-<span class="fstat-no" title="function not covered" >  as</span>ync function (next) {
-<span class="cstat-no" title="statement not covered" >    try {</span>
-      const eventId = <span class="cstat-no" title="statement not covered" >this._id;</span>
+  async function (next) {
+    try {
+      const eventId = this._id;
       /*
       // Delete all matches associated with this event
       const deletedMatches = await Match.deleteMany({ eventId });
@@ -397,12 +397,12 @@ eventSchema.pre(
       );
       */
       // Delete all notifications associated with this event
-      const deletedNotifs = <span class="cstat-no" title="statement not covered" >await Notifs.deleteMany({ event: eventId });</span>
-<span class="cstat-no" title="statement not covered" >      console.log(</span>
+      const deletedNotifs = await Notifs.deleteMany({ event: eventId });
+      console.log(
         `Deleted ${deletedNotifs.deletedCount} notifications for event ${eventId}`
       );
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      next();</span>
+      next();
     } catch (error) {
 <span class="cstat-no" title="statement not covered" >      console.error("Error in event delete middleware:", error);</span>
 <span class="cstat-no" title="statement not covered" >      next(error);</span>
@@ -410,69 +410,69 @@ eventSchema.pre(
   }
 );
 &nbsp;
-//module.exports = mongoose.model("Event", eventSchema);
+module.exports = mongoose.model("Event", eventSchema);
 &nbsp;
 module.exports._inMemory = [
   {
     id: 1,
     eventName: 'Grocery Delivery',
-    eventDesc: 'Deliver groceries to elderly',
+    eventDescription: 'Deliver groceries to elderly',
     location: 'Metropolis',
-    reqSkills: 'Transportation',
+    requiredSkills: 'Transportation',
     urgency: 'Medium',
     eventDateISO: '2025-12-24'
   },
   {
     id: 2,
     eventName: 'Babysitting',
-    eventDesc: 'Watching baby',
+    eventDescription: 'Watching baby',
     location: 'Metropolis',
-    reqSkills: 'Child Care',
+    requiredSkills: 'Child Care',
     urgency: 'Medium',
     eventDateISO: '2025-12-25'
   },
   {
     id: 3,
     eventName: 'Cooking',
-    eventDesc: 'Cook meals for homeless',
+    eventDescription: 'Cook meals for homeless',
     location: 'Metropolis',
-    reqSkills: 'Food Preparation &amp; Serving',
+    requiredSkills: 'Food Preparation &amp; Serving',
     urgency: 'Urgent',
     eventDateISO: '2025-12-26'
   },
     {
     id: 4,
     eventName: 'Cooking2',
-    eventDesc: 'Cook meals for more homeless',
+    eventDescription: 'Cook meals for more homeless',
     location: 'Metropolis',
-    reqSkills: 'Food Preparation &amp; Serving',
+    requiredSkills: 'Food Preparation &amp; Serving',
     urgency: 'Urgent',
     eventDateISO: '2025-12-27'
   },
   {
     id: 5,
     eventName: 'Grocery Delivery',
-    eventDesc: 'Deliver groceries to elderly',
+    eventDescription: 'Deliver groceries to elderly',
     location: 'Metropolis',
-    reqSkills: 'Transportation',
+    requiredSkills: 'Transportation',
     urgency: 'Medium',
     eventDateISO: '2025-08-24'
   },
   {
     id: 6,
     eventName: 'Babysitting',
-    eventDesc: 'Watching baby',
+    eventDescription: 'Watching baby',
     location: 'Metropolis',
-    reqSkills: 'Child Care',
+    requiredSkills: 'Child Care',
     urgency: 'Medium',
     eventDateISO: '2025-08-25'
   },
   {
     id: 7,
     eventName: 'Cooking',
-    eventDesc: 'Cook meals for homeless',
+    eventDescription: 'Cook meals for homeless',
     location: 'Metropolis',
-    reqSkills: 'Food Preparation &amp; Serving',
+    requiredSkills: 'Food Preparation &amp; Serving',
     urgency: 'Urgent',
     eventDateISO: '2025-08-26',
     matchedVolunteer: { id: 1, name: 'John Doe' },
@@ -481,9 +481,9 @@ module.exports._inMemory = [
   {
     id: 8,
     eventName: 'Grocery Delivery',
-    eventDesc: 'Deliver groceries to elderly',
+    eventDescription: 'Deliver groceries to elderly',
     location: 'Metropolis',
-    reqSkills: 'Transportation',
+    requiredSkills: 'Transportation',
     urgency: 'Medium',
     eventDateISO: '2025-05-24',
     matchedVolunteer: { id: 2, name: 'Jane Doe' },
@@ -492,18 +492,18 @@ module.exports._inMemory = [
   {
     id: 9,
     eventName: 'Babysitting',
-    eventDesc: 'Watching baby',
+    eventDescription: 'Watching baby',
     location: 'Metropolis',
-    reqSkills: 'Child Care',
+    requiredSkills: 'Child Care',
     urgency: 'Medium',
     eventDateISO: '2025-05-25'
   },
   {
     id: 10,
     eventName: 'Cooking',
-    eventDesc: 'Cook meals for homeless',
+    eventDescription: 'Cook meals for homeless',
     location: 'Metropolis',
-    reqSkills: 'Food Preparation &amp; Serving',
+    requiredSkills: 'Food Preparation &amp; Serving',
     urgency: 'Urgent',
     eventDateISO: '2025-05-26',
     matchedVolunteer: { id: 1, name: 'John Doe' },
@@ -512,7 +512,7 @@ module.exports._inMemory = [
 ];
 &nbsp;
 &nbsp;
-module.exports = Event;
+//module.exports = Event;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -520,7 +520,7 @@ module.exports = Event;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-18T03:39:29.727Z
+                at 2025-10-18T04:02:08.988Z
             </div>
         <script src="../prettify.js"></script>
         <script>

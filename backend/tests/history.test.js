@@ -23,7 +23,7 @@ describe('History Routes - Full Coverage', () => {
     const currentDate = new Date().toISOString().split('T')[0];
     const futureEvents = res.body.futureEvents;
     futureEvents.forEach(event => {
-      expect(event.eventDate >= currentDate).toBe(true);
+      expect(event.eventDateISO >= currentDate).toBe(true);
     });
   });
   it('should have past events only with dates before today', async () => {
@@ -31,21 +31,21 @@ describe('History Routes - Full Coverage', () => {
     const currentDate = new Date().toISOString().split('T')[0];
     const pastEvents = res.body.pastEvents;
     pastEvents.forEach(event => {
-      expect(event.eventDate < currentDate).toBe(true);
+      expect(event.eventDateISO < currentDate).toBe(true);
     });
   });
   it('should have future events sorted by date', async () => {
     const res = await request(app).get('/api/events');
     const futureEvents = res.body.futureEvents;
     for (let i = 1; i < futureEvents.length; i++) {
-      expect(futureEvents[i].eventDate >= futureEvents[i - 1].eventDate).toBe(true);
+      expect(futureEvents[i].eventDateISO >= futureEvents[i - 1].eventDateISO).toBe(true);
     }
   });
   it('should have past events sorted by date', async () => {
     const res = await request(app).get('/api/events');
     const pastEvents = res.body.pastEvents;
     for (let i = 1; i < pastEvents.length; i++) {
-      expect(pastEvents[i].eventDate <= pastEvents[i - 1].eventDate).toBe(true);
+      expect(pastEvents[i].eventDateISO <= pastEvents[i - 1].eventDateISO).toBe(true);
     } 
   });
 });
