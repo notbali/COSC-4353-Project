@@ -74,6 +74,8 @@ function Login() {
       setLoginSuccess(true);
       // Optionally store the token
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userName', username);
+      localStorage.setItem('userId', data.id);
       setTimeout(() => {
         setLoginSuccess(false);
         navigate('/'); // Redirect after login

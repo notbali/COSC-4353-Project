@@ -14,28 +14,35 @@ const Profile = ({userId,isLoggedIn}) => {
   const navigate = useNavigate();
   const [checked] = useState(true);
 
-  // // State to store user data
-  // const [user, setUser] = useState(null);
+  console.log("Logged In:", isLoggedIn);
+
+  // State to store user data
+  const [user, setUser] = useState(null);
 
   // Check if the user is logged in
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login");
-    } else {
-      navigate(`/profile/${userId}`);
-      
-      // // Fetch user data from the backend
-      // const fetchUserData = async () => {
-      //   try {
-      //     const response = await axios.get(`http://localhost:4000/profile/${userId}`);
-      //     setUser(response.data);
-      //   } catch (error) {
-      //     console.error("Error fetching user data:", error);
-      //   }
-      // };
-      // fetchUserData();
-    }
+    // Fetch user data from the backend
+    const fetchUserData = async () => {
+      if (!isLoggedIn) {
+        navigate("/login");
+        return;
+      }
+      try {
+        const response = await axios.get(`http://localhost:5001/api/profile`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` 
+        }});
+        setUser(response.data);
+        navigate(`/profile/${userId}`);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserData();
   }, [userId,isLoggedIn, navigate]);
+
+  console.log("User Data:", user);
+  console.log("Token:", localStorage.getItem("token"));
+  console.log("id:", userId);
 
   // Function to navigate to the edit page
   const handleEdit = () => {
@@ -55,6 +62,10 @@ const Profile = ({userId,isLoggedIn}) => {
     transition: "all 0.4s ease",
   }));
 
+  // Loading page
+  if (!user) return <div>Loading profile...</div>;
+
+  // Render the user profile
   return (
     <Box sx={{ padding: "40px" }}>
       <Fade in={checked} timeout={600}>
@@ -100,49 +111,49 @@ const Profile = ({userId,isLoggedIn}) => {
             >
               <div>
                 <h2>
-                  {/* <b>{user.name}</b> */}
-                  <b>John Doe</b>
+                  <b>{user.name}</b>
+                  {/* <b>John Doe</b> */}
                 </h2>
               </div>
               <div>
                   <b>Address 1: </b> 
-                  123 Main Street, Anytown, USA
-                  {/* <b>{user.address1}</b> */}
+                  {/* 123 Main Street, Anytown, USA */}
+                  <b>{user.address1}</b>
               </div>
               <div>
                   <b>Address 2: </b> 
-                  456 Elm Street, Anytown, USA
-                  {/* <b>{user.address2}</b> */}
+                  {/* 456 Elm Street, Anytown, USA */}
+                  <b>{user.address2}</b>
               </div>
               <div>
                   <b>City: </b> 
-                  Anytown
-                  {/* <b>{user.city}</b> */}
+                  {/* Anytown */}
+                  <b>{user.city}</b>
               </div>
               <div>
                   <b>State: </b> 
-                  TX
-                  {/* <b>{user.state}</b> */}
+                  {/* TX */}
+                  <b>{user.state}</b>
               </div>
               <div>
                   <b>Zip Code: </b> 
-                  12345
-                  {/* <b>{user.zip}</b> */}
+                  {/* 12345 */}
+                  <b>{user.zip}</b>
               </div>
               <div>
                   <b>Skills: </b> 
-                  *List of skills*
-                  {/* <b>{user.skills}</b> */}
+                  {/* *List of skills* */}
+                  <b>{user.skills.join(', ')}</b>
               </div>
               <div>
                   <b>Preferences: </b> 
-                  *Paragraph*
-                  {/* <b>{user.preferences}</b> */}
+                  {/* *Paragraph* */}
+                  <b>{user.preferences}</b>
               </div>
               <div>
                   <b>Availability: </b> 
-                  *Shows calendar of availability*
-                  {/* <b>{user.availability}</b> */}
+                  {/* *Shows calendar of availability* */}
+                  <b>{user.availability.join(', ')}</b>
               </div>
             </Paper>
           </Fade>
