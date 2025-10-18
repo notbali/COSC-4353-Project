@@ -19,83 +19,24 @@ const StyledCard = styled(Card)({
   transition: "all 0.3s ease",
 });
 
-const volunteerhistory = () => {
-  // Dummy data since there's no backend or database for assignment 2
-  const dummyFutureEvents = [
-    {
-      eventName: 'Grocery Delivery',
-      eventDesc: 'Deliver groceries to elderly',
-      location: 'Metropolis',
-      reqSkills: 'Transportation',
-      urgency: 'Medium',
-      eventDate: '12/24'
-    },
-    {
-      eventName: 'Babysitting',
-      eventDesc: 'Watching baby',
-      location: 'Metropolis',
-      reqSkills: 'Child Care',
-      urgency: 'Medium',
-      eventDate: '12/25'
-    },
-    {
-      eventName: 'Cooking',
-      eventDesc: 'Cook meals for homeless',
-      location: 'Metropolis',
-      reqSkills: 'Food Preparation & Serving',
-      urgency: 'Urgent',
-      eventDate: '12/26'
-    }]
-  const dummyPastEvents = [
-    {
-      eventName: 'Grocery Delivery',
-      eventDesc: 'Deliver groceries to elderly',
-      location: 'Metropolis',
-      reqSkills: 'Transportation',
-      urgency: 'Medium',
-      eventDate: '08/24'
-    },
-    {
-      eventName: 'Babysitting',
-      eventDesc: 'Watching baby',
-      location: 'Metropolis',
-      reqSkills: 'Child Care',
-      urgency: 'Medium',
-      eventDate: '08/25'
-    },
-    {
-      eventName: 'Cooking',
-      eventDesc: 'Cook meals for homeless',
-      location: 'Metropolis',
-      reqSkills: 'Food Preparation & Serving',
-      urgency: 'Urgent',
-      eventDate: '08/26'
-    },
-    {
-      eventName: 'Grocery Delivery',
-      eventDesc: 'Deliver groceries to elderly',
-      location: 'Metropolis',
-      reqSkills: 'Transportation',
-      urgency: 'Medium',
-      eventDate: '05/24'
-    },
-    {
-      eventName: 'Babysitting',
-      eventDesc: 'Watching baby',
-      location: 'Metropolis',
-      reqSkills: 'Child Care',
-      urgency: 'Medium',
-      eventDate: '05/25'
-    },
-    {
-      eventName: 'Cooking',
-      eventDesc: 'Cook meals for homeless',
-      location: 'Metropolis',
-      reqSkills: 'Food Preparation & Serving',
-      urgency: 'Urgent',
-      eventDate: '05/26'
-    }
-  ]
+const VolunteerHistory = () => {
+  const [futureEvents, setFutureEvents] = React.useState([]);
+  const [pastEvents, setPastEvents] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch('http://localhost:5001/api/events');
+        if (!res.ok) throw new Error('no backend');
+        const data = await res.json();
+        setFutureEvents((data && data.futureEvents) || []);
+        setPastEvents((data && data.pastEvents) || []);
+      } catch (err) {
+        console.error('Failed to fetch events:', err.message);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   return (
     <Container sx={{ mt: 5, mb: 5 }}>
@@ -132,7 +73,7 @@ const volunteerhistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {dummyFutureEvents.map((event, index) => (
+                  {futureEvents.map((event, index) => (
                     <tr key={index}>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDesc}</td>
@@ -140,9 +81,7 @@ const volunteerhistory = () => {
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.reqSkills}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDate}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        {index === 1 ? 'John Doe' : 'Unassigned'}
-                      </td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.matchedVolunteerName || 'Unassigned'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -168,7 +107,7 @@ const volunteerhistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {dummyPastEvents.map((event, index) => (
+                  {pastEvents.map((event, index) => (
                     <tr key={index}>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDesc}</td>
@@ -176,8 +115,7 @@ const volunteerhistory = () => {
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.reqSkills}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDate}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        {event.eventName === 'Grocery Delivery' ? 'Jane Doe' : 'John Doe'}
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.matchedVolunteerName || 'No Volunteer'}
                       </td>
                     </tr>
                   ))}
@@ -190,4 +128,4 @@ const volunteerhistory = () => {
   );
 }
 
-export default volunteerhistory;
+export default VolunteerHistory;

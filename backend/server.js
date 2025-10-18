@@ -6,6 +6,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.listen(5001, () => console.log('Server running on port 5001'));
+
+const volunteerRoutes = require('./routes/history');
+const matchRoutes = require('./routes/match');
+app.use('/api', volunteerRoutes);
+app.use('/api', matchRoutes);
+
 // In-memory users array
 const users = [];
 const userProfiles = {};
