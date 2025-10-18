@@ -318,3 +318,39 @@ describe("Event Routes - Full Coverage", () => {
     });
   });
 });
+
+// Additional route-focused tests merged from small files for consolidated coverage
+describe('Event Routes - toObject and error fallbacks', () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it('handles events that are Mongoose docs with toObject()', async () => {
+    const docLike = { _id: 'doc1', eventName: 'Doc Event', location: 'X' };
+    const doc = { toObject: () => docLike };
+    Event.find.mockResolvedValue([doc]);
+
+    const res = await request(app).get('/events/all-with-volunteer-count');
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].volunteerCount).toBe(0);
+    expect(res.body[0].volunteers).toEqual([]);
+  });
+
+  it('uses fallback message when save rejects with non-Error', async () => {
+    Event.prototype.save = jest.fn().mockRejectedValue({});
+
+    const res = await request(app).post('/events/create').send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Error creating event');
+  });
+
+  it('uses fallback message when find rejects with non-Error', async () => {
+    Event.find.mockRejectedValue({});
+
+    const res = await request(app).get('/events/all');
+
+    expect(res.status).toBe(500);
+    expect(res.body.message).toBe('Error fetching events');
+  });
+});

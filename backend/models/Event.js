@@ -50,11 +50,11 @@ eventSchema.methods.deleteOne = async function () {
 
   const deletedMatches = await Match.deleteMany({ eventId });
   const matchesDeletedCount = deletedMatches && deletedMatches.deletedCount ? deletedMatches.deletedCount : 0;
-  console.log(`Deleted ${matchesDeletedCount} matches for event ${eventId}`);
+  // console.log(`Deleted ${matchesDeletedCount} matches for event ${eventId}`);
 
   const deletedNotifs = await Notifs.deleteMany({ event: eventId });
   const notifsDeletedCount = deletedNotifs && deletedNotifs.deletedCount ? deletedNotifs.deletedCount : 0;
-  console.log(`Deleted ${notifsDeletedCount} notifications for event ${eventId}`);
+  // console.log(`Deleted ${notifsDeletedCount} notifications for event ${eventId}`);
 };
 
 // Static helper to cleanup related data for an event id. Exported as a model static
@@ -62,11 +62,11 @@ eventSchema.methods.deleteOne = async function () {
 eventSchema.statics.cleanupRelatedData = async function (eventId) {
   const deletedMatches = await Match.deleteMany({ eventId });
   const matchesDeletedCount = deletedMatches && deletedMatches.deletedCount ? deletedMatches.deletedCount : 0;
-  console.log(`Deleted ${matchesDeletedCount} matches for event ${eventId}`);
+  // console.log(`Deleted ${matchesDeletedCount} matches for event ${eventId}`);
 
   const deletedNotifs = await Notifs.deleteMany({ event: eventId });
   const notifsDeletedCount = deletedNotifs && deletedNotifs.deletedCount ? deletedNotifs.deletedCount : 0;
-  console.log(`Deleted ${notifsDeletedCount} notifications for event ${eventId}`);
+  // console.log(`Deleted ${notifsDeletedCount} notifications for event ${eventId}`);
 };
 
 const Event = mongoose.model("Event", eventSchema);
