@@ -49,7 +49,16 @@ app.get('/api/profile', (req, res) => {
     
     // Grab token and decode
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, 'your_jwt_secret');
+    } catch (err) {
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: 'invalid token' });
+      }
+      console.error('Profile fetch error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
    
     // Find user
     const user = users.find(u => u.username === decoded.username);
@@ -84,11 +93,20 @@ app.put('/api/profile/edit', (req, res) => {
   try {
     // Grab authentication header
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: token + 'no token found' });
+    if (!authHeader) return res.status(401).json({ message: 'no token found' });
     
     // Grab token and decode
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, 'your_jwt_secret');
+    } catch (err) {
+      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: 'invalid token' });
+      }
+      console.error('Profile update error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
    
     // Find user
     const user = users.find(u => u.username === decoded.username);
