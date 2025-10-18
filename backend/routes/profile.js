@@ -23,7 +23,6 @@ function authenticate(req, res, next) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'invalid token' });
     }
-    console.error('Auth middleware error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
@@ -46,9 +45,7 @@ router.get('/profile', authenticate, (req, res) => {
       };
     }
     res.json(userProfiles[username]);
-    console.log('Received profile request for:', username);
   } catch (err) {
-    console.error('Profile fetch error:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -74,9 +71,7 @@ router.put('/profile/edit', authenticate, (req, res) => {
     const profile = userProfiles[username];
     Object.assign(profile, req.body);
     res.json({ message: 'Profile updated!' });
-    console.log('Received edit profile data:', req.body);
   } catch (err) {
-    console.error('Profile update error:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
