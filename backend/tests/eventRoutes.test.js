@@ -3,13 +3,18 @@ const express = require("express");
 const eventRoutes = require("../routes/eventRoutes");
 const Event = require("../models/Event");
 
-jest.mock("../models/Event", () => ({
-  find: jest.fn(),
-  findById: jest.fn(),
-  findByIdAndUpdate: jest.fn(),
-  findByIdAndDelete: jest.fn(),
-  save: jest.fn(),
-}));
+// Provide a mock constructor function so tests can assign to Event.prototype.save
+jest.mock("../models/Event", () => {
+  function MockEvent(data) {
+    Object.assign(this, data);
+  }
+  MockEvent.find = jest.fn();
+  MockEvent.findById = jest.fn();
+  MockEvent.findByIdAndUpdate = jest.fn();
+  MockEvent.findByIdAndDelete = jest.fn();
+  // prototype methods can be set by tests, e.g., Event.prototype.save = jest.fn()
+  return MockEvent;
+});
 
 const app = express();
 app.use(express.json());
@@ -286,7 +291,7 @@ describe("Event Routes - Full Coverage", () => {
       location: "Complete Location",
       requiredSkills: "JavaScript, Node.js",
       urgency: "High",
-      eventDate: new Date(),
+    eventDate: new Date().toISOString(),
     };
     Event.prototype.save = jest.fn().mockResolvedValue(completeEvent);
 

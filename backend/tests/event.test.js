@@ -1,10 +1,15 @@
 const mongoose = require("mongoose");
 const Event = require("../models/Event");
 const Notifs = require("../models/Notifs");
+const Match = require("../models/Match");
 
 // Mock dependent models to avoid database operations
 
 jest.mock("../models/Notifs", () => ({
+  deleteMany: jest.fn(),
+}));
+
+jest.mock("../models/Match", () => ({
   deleteMany: jest.fn(),
 }));
 
@@ -24,7 +29,8 @@ describe("Event Model", () => {
         eventDate: new Date(),
       });
 
-      Notifs.deleteMany.mockResolvedValue({ deletedCount: 3 });
+  Match.deleteMany.mockResolvedValue({ deletedCount: 2 });
+  Notifs.deleteMany.mockResolvedValue({ deletedCount: 3 });
 
       // Simulate calling the deleteOne middleware
       await mockEvent.deleteOne();
@@ -42,17 +48,12 @@ describe("Event Model", () => {
         eventDate: new Date(),
       });
 
-      Notifs.deleteMany.mockResolvedValue({ deletedCount: 3 });
+      // Simulate Match.deleteMany throwing an error so middleware rejects
+      Match.deleteMany.mockRejectedValue(new Error("Match deletion error"));
 
-      const next = jest.fn(); // Mock next to check for error handling
-      try {
-        await mockEvent.deleteOne(next);
-      } catch (error) {
-        expect(error.message).toBe("Match deletion error");
-      }
+      await expect(mockEvent.deleteOne()).rejects.toThrow("Match deletion error");
 
-      expect(next).toHaveBeenCalledWith(expect.any(Error));
-      expect(Notifs.deleteMany).toHaveBeenCalledWith({ event: mockEvent._id });
+      expect(Match.deleteMany).toHaveBeenCalledWith({ eventId: mockEvent._id });
     });
   });
 

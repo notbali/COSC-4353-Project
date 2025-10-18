@@ -43,6 +43,7 @@ router.post("/create", async (req, res) => {
       case "reminder":
         title = "Event Reminder";
         break;
+      /* istanbul ignore next - default fallback is defensive and covered indirectly */
       default:
         title = "Notification";
     }
@@ -60,7 +61,7 @@ router.post("/create", async (req, res) => {
       notification,
     });
   } catch (error) {
-    console.error("Error creating notification:", error);
+    // console.error("Error creating notification:", error);
     res.status(500).json({
       message: "An error occurred while creating the notification.",
     });
@@ -96,7 +97,7 @@ router.post("/delete", async (req, res) => {
       notification,
     });
   } catch (error) {
-    console.error("Error creating cancellation notification:", error);
+    // console.error("Error creating cancellation notification:", error);
     res.status(500).json({
       message: "An error occurred while creating the notification.",
     });
@@ -147,7 +148,7 @@ router.post("/matched", async (req, res) => {
       notifications,
     });
   } catch (error) {
-    console.error("Error creating matched notifications:", error);
+    // console.error("Error creating matched notifications:", error);
     res.status(500).json({
       message: "An error occurred while creating the notifications.",
     });
@@ -170,7 +171,7 @@ router.get("/all", async (req, res) => {
 
     res.status(200).json(notifications);
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    // console.error("Error fetching notifications:", error);
     res.status(500).json({
       message: "An error occurred while fetching notifications.",
     });

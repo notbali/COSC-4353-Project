@@ -4,7 +4,6 @@ const Notifs = require("../models/Notifs");
 const Event = require("../models/Event");
 const router = require("../routes/notifsRoutes");
 const mongoose = require("mongoose");
-const moment = require("moment");
 
 jest.mock("../models/Notifs");
 jest.mock("../models/Event");
@@ -41,6 +40,36 @@ describe("Notifications Routes - Full Coverage", () => {
     expect(response.statusCode).toBe(201);
     expect(response.body.message).toBe("Notification created successfully.");
     expect(Notifs.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('should create a notification for event update type', async () => {
+    const mockEvent = { _id: '1', eventName: 'Updated Event' };
+    const mockNotification = { _id: 'u1', title: 'An Event Has Been Updated!' };
+
+    Event.findById.mockResolvedValue(mockEvent);
+    Notifs.create.mockResolvedValue(mockNotification);
+
+    const response = await request(app)
+      .post('/notifs/create')
+      .send({ eventId: '1', notifType: 'event update', userId: 'u1' });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.notification).toBeDefined();
+  });
+
+  it('should create a notification for reminder type', async () => {
+    const mockEvent = { _id: '1', eventName: 'Reminder Event' };
+    const mockNotification = { _id: 'r1', title: 'Event Reminder' };
+
+    Event.findById.mockResolvedValue(mockEvent);
+    Notifs.create.mockResolvedValue(mockNotification);
+
+    const response = await request(app)
+      .post('/notifs/create')
+      .send({ eventId: '1', notifType: 'reminder', userId: 'u1' });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.notification).toBeDefined();
   });
 
   it("should return 404 if the event does not exist for create", async () => {
@@ -95,14 +124,16 @@ describe("Notifications Routes - Full Coverage", () => {
     Notifs.create.mockResolvedValue(mockNotification);
 
     const response = await request(app).post("/notifs/delete").send({
+      // Only provide eventName to exercise null-fallbacks for other fields
       eventName: "Test Event",
-      eventDescription: "Test Description",
-      eventLocation: "Test Location",
-      eventDate: "2024-10-25",
     });
 
     expect(response.statusCode).toBe(201);
     expect(response.body.message).toBe("Notification created successfully.");
+    // Ensure that the created notification was called with null eventDetails when fields missing
+    expect(Notifs.create).toHaveBeenCalledWith(expect.objectContaining({
+      eventDetails: { name: "Test Event", description: null, location: null, date: null }
+    }));
   });
 
   it("should return 400 for missing event details", async () => {
@@ -208,7 +239,11 @@ describe("Notifications Routes - Full Coverage", () => {
       { _id: "1", title: "Matched Event", user: "123" },
     ];
 
-    Notifs.find.mockResolvedValue(mockNotifications);
+    // Provide a chainable mock for find().populate().sort()
+    Notifs.find.mockReturnValue({
+      populate: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockResolvedValue(mockNotifications),
+    });
 
     const response = await request(app)
       .get("/notifs/all")
@@ -222,7 +257,10 @@ describe("Notifications Routes - Full Coverage", () => {
   it("should retrieve all notifications if no userId is provided", async () => {
     const mockNotifications = [{ _id: "1", title: "General Notification" }];
 
-    Notifs.find.mockResolvedValue(mockNotifications);
+    Notifs.find.mockReturnValue({
+      populate: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockResolvedValue(mockNotifications),
+    });
 
     const response = await request(app).get("/notifs/all");
 
@@ -232,7 +270,10 @@ describe("Notifications Routes - Full Coverage", () => {
   });
 
   it("should return empty array if no notifications found", async () => {
-    Notifs.find.mockResolvedValue([]);
+    Notifs.find.mockReturnValue({
+      populate: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockResolvedValue([]),
+    });
 
     const response = await request(app)
       .get("/notifs/all")
@@ -244,7 +285,8 @@ describe("Notifications Routes - Full Coverage", () => {
   });
 
   it("should return 500 on server error for get all", async () => {
-    Notifs.find.mockRejectedValue(new Error("Database error"));
+  // Reject the initial find call
+  Notifs.find.mockImplementation(() => { throw new Error('Database error'); });
 
     const response = await request(app).get("/notifs/all");
 
