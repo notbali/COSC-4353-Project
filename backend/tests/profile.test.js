@@ -53,7 +53,66 @@ describe('Profile Routes - Full Coverage', () => {
     const res = await request(app)
       .get('/api/profile')
       .set('Authorization', 'Bearer invalidtoken');
-    // invalid token will trigger jwt.verify thrown error -> 500 in our implementation
+    // invalid token will trigger jwt.verify thrown error -> 401 in our implementation
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns 401 when token decodes to unknown user', async () => {
+    const tokenUnknown = jwt.sign({ username: 'noone' }, 'your_jwt_secret');
+    const res = await request(app)
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${tokenUnknown}`);
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.message).toMatch(/no user found/i);
+  });
+
+  it('returns existing profile when present', async () => {
+    // precreate profile
+    profileModule.userProfiles['testuser'] = { name: 'Existing', skills: [] };
+
+    const res = await request(app)
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.name).toBe('Existing');
+  });
+
+  it('updates an already existing profile (put)', async () => {
+    profileModule.userProfiles['testuser'] = { name: 'Existing', city: 'Old' };
+
+    const res = await request(app)
+      .put('/api/profile/edit')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ city: 'New' });
+
+    expect(res.statusCode).toBe(200);
+    expect(profileModule.userProfiles['testuser'].city).toBe('New');
+  });
+
+  it('returns 401 for expired token', async () => {
+    // create token that is already expired
+    const expired = jwt.sign({ username: 'testuser' }, 'your_jwt_secret', { expiresIn: -10 });
+    const res = await request(app)
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${expired}`);
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.message).toMatch(/invalid token/i);
+  });
+
+  it('returns 500 for unexpected auth errors', async () => {
+    const verifySpy = jest.spyOn(require('jsonwebtoken'), 'verify')
+      .mockImplementation(() => { throw new Error('boom'); });
+
+    const res = await request(app)
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${token}`);
+
     expect(res.statusCode).toBe(500);
+    expect(res.body.message).toMatch(/internal server error/i);
+
+    verifySpy.mockRestore();
   });
 });

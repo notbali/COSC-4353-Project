@@ -6,29 +6,34 @@ const router = express.Router();
 const users = [{ username: 'testuser', email: 'test@example.com', password: 'hashedpassword' }];
 const userProfiles = {};
 
-// Simulate user authentication (duplicate user won't break tests but ensure single entry)
-if (!users.find(u => u.username === 'testuser')) {
-  users.push({ username: 'testuser', password: 'hashedpassword' });
+// authentication middleware
+function authenticate(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: 'no token found' });
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const user = users.find(u => u.username === decoded.username);
+    if (!user) return res.status(401).json({ message: 'no user found' });
+    req.user = user;
+    return next();
+  } catch (err) {
+    // JWT errors should return 401
+    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'invalid token' });
+    }
+    console.error('Auth middleware error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 }
 
 // Profile route
-router.get('/profile', (req, res) => {
+router.get('/profile', authenticate, (req, res) => {
   try {
-    // Grab authentication header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: 'no token found' });
-    
-    // Grab token and decode
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, 'your_jwt_secret');
-   
-    // Find user
-    const user = users.find(u => u.username === decoded.username);
-    if (!user) return res.status(401).json({ message: 'no user found' });
-
-    // Set profile if it doesn't exist
-    if (!userProfiles[user.username]) {
-      userProfiles[user.username] = {
+    const username = req.user.username;
+    if (!userProfiles[username]) {
+      userProfiles[username] = {
         name: "",
         address1: "",
         address2: "",
@@ -40,34 +45,20 @@ router.get('/profile', (req, res) => {
         availability: [],
       };
     }
-    
-    // Return profile
-    res.json(userProfiles[user.username]);
-    console.log('Received profile request for:', user.username);
+    res.json(userProfiles[username]);
+    console.log('Received profile request for:', username);
   } catch (err) {
-    console.error("Profile fetch error:", err);
+    console.error('Profile fetch error:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Edit profile route
-router.put('/profile/edit', (req, res) => {
+router.put('/profile/edit', authenticate, (req, res) => {
   try {
-    // Grab authentication header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: 'no token found' });
-    
-    // Grab token and decode
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, 'your_jwt_secret');
-   
-    // Find user
-    const user = users.find(u => u.username === decoded.username);
-    if (!user) return res.status(401).json({ message: 'no user found' });
-
-    // Set profile if it doesn't exist
-    if (!userProfiles[user.username]) {
-      userProfiles[user.username] = {
+    const username = req.user.username;
+    if (!userProfiles[username]) {
+      userProfiles[username] = {
         name: "",
         address1: "",
         address2: "",
@@ -79,14 +70,13 @@ router.put('/profile/edit', (req, res) => {
         availability: [],
       };
     }
-    
-    // Update profile
-    const profile = userProfiles[user.username];
+
+    const profile = userProfiles[username];
     Object.assign(profile, req.body);
     res.json({ message: 'Profile updated!' });
     console.log('Received edit profile data:', req.body);
   } catch (err) {
-    console.error("Profile update error:", err);
+    console.error('Profile update error:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

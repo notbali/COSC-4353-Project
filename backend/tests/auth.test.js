@@ -1,5 +1,23 @@
 const request = require('supertest');
 const express = require('express');
+
+// Mock the User model with a lightweight in-memory implementation to avoid mongoose hangs
+const mockUsers = {};
+jest.mock('../models/User', () => {
+  class User {
+    constructor(data) { Object.assign(this, data); }
+    async save() {
+      if (mockUsers[this.username]) throw new Error('duplicate');
+      mockUsers[this.username] = this;
+      return this;
+    }
+    static async findOne(query) {
+      return mockUsers[query.username] || null;
+    }
+  }
+  return User;
+});
+
 const authRoutes = require('../routes/auth');
 
 const app = express();
