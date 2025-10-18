@@ -115,4 +115,38 @@ describe('Profile Routes - Full Coverage', () => {
 
     verifySpy.mockRestore();
   });
+
+  it('handles unexpected error in get route and returns 500', async () => {
+    // Define a getter for this username that throws when accessed to simulate an unexpected error in the handler
+    Object.defineProperty(profileModule.userProfiles, 'testuser', {
+      configurable: true,
+      get() { throw new Error('boom-get'); }
+    });
+
+    const res = await request(app)
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(500);
+
+    // cleanup
+    delete profileModule.userProfiles.testuser;
+  });
+
+  it('handles unexpected error in put route and returns 500', async () => {
+    Object.defineProperty(profileModule.userProfiles, 'testuser', {
+      configurable: true,
+      get() { throw new Error('boom-put'); }
+    });
+
+    const res = await request(app)
+      .put('/api/profile/edit')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ foo: 'bar' });
+
+    expect(res.statusCode).toBe(500);
+
+    // cleanup
+    delete profileModule.userProfiles.testuser;
+  });
 });

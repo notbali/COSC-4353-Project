@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1760753863022" clover="3.2.0">
-  <project timestamp="1760753863022" name="All files">
-    <metrics statements="72" coveredstatements="70" conditionals="42" coveredconditionals="42" methods="6" coveredmethods="6" elements="120" coveredelements="118" complexity="0" loc="72" ncloc="72" packages="1" files="2" classes="2"/>
+<coverage generated="1760754066002" clover="3.2.0">
+  <project timestamp="1760754066002" name="All files">
+    <metrics statements="72" coveredstatements="72" conditionals="42" coveredconditionals="42" methods="6" coveredmethods="6" elements="120" coveredelements="120" complexity="0" loc="72" ncloc="72" packages="1" files="2" classes="2"/>
     <file name="auth.js" path="C:\Users\bradl\OneDrive\Desktop\School Stuff\UH\COSC 4353 Software Design\Project\COSC-4353-Project\backend\routes\auth.js">
       <metrics statements="38" coveredstatements="38" conditionals="30" coveredconditionals="30" methods="2" coveredmethods="2"/>
       <line num="1" count="1" type="stmt"/>
@@ -44,40 +44,40 @@
       <line num="63" count="1" type="stmt"/>
     </file>
     <file name="profile.js" path="C:\Users\bradl\OneDrive\Desktop\School Stuff\UH\COSC 4353 Software Design\Project\COSC-4353-Project\backend\routes\profile.js">
-      <metrics statements="34" coveredstatements="32" conditionals="12" coveredconditionals="12" methods="4" coveredmethods="4"/>
+      <metrics statements="34" coveredstatements="34" conditionals="12" coveredconditionals="12" methods="4" coveredmethods="4"/>
       <line num="1" count="1" type="stmt"/>
       <line num="2" count="1" type="stmt"/>
       <line num="3" count="1" type="stmt"/>
       <line num="6" count="1" type="stmt"/>
       <line num="7" count="1" type="stmt"/>
-      <line num="11" count="9" type="stmt"/>
-      <line num="12" count="9" type="cond" truecount="2" falsecount="0"/>
-      <line num="14" count="8" type="stmt"/>
-      <line num="15" count="8" type="stmt"/>
-      <line num="16" count="8" type="stmt"/>
-      <line num="17" count="5" type="stmt"/>
-      <line num="18" count="5" type="cond" truecount="2" falsecount="0"/>
-      <line num="19" count="4" type="stmt"/>
-      <line num="20" count="4" type="stmt"/>
+      <line num="11" count="11" type="stmt"/>
+      <line num="12" count="11" type="cond" truecount="2" falsecount="0"/>
+      <line num="14" count="10" type="stmt"/>
+      <line num="15" count="10" type="stmt"/>
+      <line num="16" count="10" type="stmt"/>
+      <line num="17" count="7" type="stmt"/>
+      <line num="18" count="7" type="cond" truecount="2" falsecount="0"/>
+      <line num="19" count="6" type="stmt"/>
+      <line num="20" count="6" type="stmt"/>
       <line num="23" count="3" type="cond" truecount="4" falsecount="0"/>
       <line num="24" count="2" type="stmt"/>
       <line num="26" count="1" type="stmt"/>
       <line num="31" count="1" type="stmt"/>
-      <line num="32" count="2" type="stmt"/>
-      <line num="33" count="2" type="stmt"/>
-      <line num="34" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="32" count="3" type="stmt"/>
+      <line num="33" count="3" type="stmt"/>
+      <line num="34" count="3" type="cond" truecount="2" falsecount="0"/>
       <line num="35" count="1" type="stmt"/>
       <line num="47" count="2" type="stmt"/>
-      <line num="49" count="0" type="stmt"/>
+      <line num="49" count="1" type="stmt"/>
       <line num="54" count="1" type="stmt"/>
-      <line num="55" count="2" type="stmt"/>
-      <line num="56" count="2" type="stmt"/>
-      <line num="57" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="55" count="3" type="stmt"/>
+      <line num="56" count="3" type="stmt"/>
+      <line num="57" count="3" type="cond" truecount="2" falsecount="0"/>
       <line num="58" count="1" type="stmt"/>
       <line num="71" count="2" type="stmt"/>
       <line num="72" count="2" type="stmt"/>
       <line num="73" count="2" type="stmt"/>
-      <line num="75" count="0" type="stmt"/>
+      <line num="75" count="1" type="stmt"/>
       <line num="80" count="1" type="stmt"/>
     </file>
   </project>
