@@ -15,12 +15,23 @@ const bcrypt = require('bcryptjs');
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/volunteer-app';
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('✅ Connected to MongoDB');
+    // Load from .env file
+    const mongoURI = process.env.MONGODB_URI;
+    
+    // Check if URI exists
+    if (!mongoURI) {
+      console.error('❌ MONGODB_URI not found in environment variables!');
+      console.error('Please check your .env file exists in the backend folder');
+      console.error('Current directory:', __dirname);
+      process.exit(1);
+    }
+    
+    console.log('🔗 Connecting to MongoDB Atlas...');
+    
+    // Remove deprecated options
+    await mongoose.connect(mongoURI);
+    
+    console.log('✅ Connected to MongoDB Atlas');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
     process.exit(1);
