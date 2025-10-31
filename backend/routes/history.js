@@ -13,13 +13,14 @@ router.get('/volunteers', async (req, res) => {
 		const volunteers = userProfiles.map(profile => ({
 			id: profile.userId._id, // Use the UserCredentials _id as the volunteer ID
 			name: profile.fullName,
-			address1: profile.address,
-			address2: '', // UserProfile doesn't have address2, set to empty
+			address1: profile.address1,
+			address2: profile.address2 || '',
 			city: profile.city,
 			state: profile.state,
-			zipCode: profile.zipcode,
+			zipCode: profile.zip,
 			skills: profile.skills || [],
-			availability: profile.availability || []
+			availability: profile.availability || [],
+			preferences: profile.preferences || []
 		}));
 		
 		res.status(200).json(volunteers);
@@ -70,11 +71,13 @@ router.get('/volunteer-history/:userId', async (req, res) => {
 	try {
 		const { userId } = req.params;
 		const history = await VolunteerHistory.find({ userId })
-			.populate('eventId', 'eventName eventDescription location eventDate')
-			.sort({ participationDate: -1 });
+			.populate('eventId', 'eventName eventDescription location eventDate requiredSkills urgency')
+			.sort({ createdAt: -1 });
 		
+		console.log(`Found ${history.length} volunteer history records for user ${userId}`);
 		res.status(200).json(history);
 	} catch (error) {
+		console.error('Error fetching volunteer history:', error);
 		res.status(500).json({ message: 'Error fetching volunteer history', error });
 	}
 });

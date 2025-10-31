@@ -167,14 +167,23 @@ const VolunteerMatchingForm = () => {
         </Box>
         {selectedVolunteerObj && (
         <Box mt={2} mb={5}p={2} bgcolor="#fff" borderRadius={2} boxShadow={1}>
-          <Typography variant="h6"><b>Name: {selectedVolunteerObj.name }</b></Typography>
+          <Typography variant="h6"><b>Name: {selectedVolunteerObj.name}</b></Typography>
           <Typography variant="body2"><b>Address 1:</b> {selectedVolunteerObj.address1}</Typography>
-          <Typography variant="body2"><b>Address 2:</b> {selectedVolunteerObj.address2}</Typography>
+          {selectedVolunteerObj.address2 && (
+            <Typography variant="body2"><b>Address 2:</b> {selectedVolunteerObj.address2}</Typography>
+          )}
           <Typography variant="body2"><b>City:</b> {selectedVolunteerObj.city}</Typography>
           <Typography variant="body2"><b>State:</b> {selectedVolunteerObj.state}</Typography>
           <Typography variant="body2"><b>Zip Code:</b> {selectedVolunteerObj.zipCode}</Typography>
-          <Typography variant="body2"><b>Skills:</b> {selectedVolunteerObj.skills.join(', ')}</Typography>
-          <Typography variant="body2"><b>Availability:</b> {selectedVolunteerObj.availability.join(', ')}</Typography>
+          {selectedVolunteerObj.skills && selectedVolunteerObj.skills.length > 0 && (
+            <Typography variant="body2"><b>Skills:</b> {selectedVolunteerObj.skills.join(', ')}</Typography>
+          )}
+          {selectedVolunteerObj.availability && selectedVolunteerObj.availability.length > 0 && (
+            <Typography variant="body2"><b>Availability:</b> {selectedVolunteerObj.availability.join(', ')}</Typography>
+          )}
+          {selectedVolunteerObj.preferences && selectedVolunteerObj.preferences.length > 0 && (
+            <Typography variant="body2"><b>Preferences:</b> {selectedVolunteerObj.preferences}</Typography>
+          )}
         </Box>
         )}
         {selectedVolunteer && (

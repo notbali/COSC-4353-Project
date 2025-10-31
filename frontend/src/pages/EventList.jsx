@@ -1,187 +1,155 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
   Typography,
-  CircularProgress,
-  Grid,
-  Paper,
-  Collapse,
   Card,
   CardContent,
-  Button,
-  Grow,
-  Box,
+  Fade,
 } from "@mui/material";
-import { styled } from "@mui/system";
-import axios from "axios";
+import { styled, keyframes } from "@mui/system";
 
 const StyledCard = styled(Card)({
   background: "#f5f5f5",
-  boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
+  boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
   borderRadius: "15px",
   padding: "20px",
-  transition: "transform 0.3s ease, box-shadow 0.3s ease",
-  "&:hover": {
-    transform: "scale(1.05)",
-    boxShadow: "0px 8px 25px rgba(0,0,0,0.3)",
-  },
-});
-
-const StyledButton = styled(Button)({
-  backgroundColor: "#184b69ff",
-  color: "#ffffff",
-  fontWeight: "bold",
-  padding: "10px 20px",
-  transition: "transform 0.3s ease",
-  "&:hover": {
-    backgroundColor: "#1f5777ff",
-    transform: "scale(1.05)",
-  },
-});
-
-const CreateButton = styled(Button)({
-  backgroundColor: "#184b69ff",
-  color: "#ffffff",
-  marginTop: "50px",
-  fontWeight: "bold",
-  padding: "10px 20px",
-  marginBottom: "20px",
-  "&:hover": {
-    backgroundColor: "#66BB6A",
-  },
+  maxWidth: "1200px",
+  margin: "auto",
+  transition: "all 0.3s ease",
 });
 
 const EventList = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [futureEvents, setFutureEvents] = React.useState([]);
+  const [pastEvents, setPastEvents] = React.useState([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/events/all");
-        setEvents(response.data);
-        setLoading(false);
-      } catch (error) {
-        setError("Failed to load events");
-        setLoading(false);
+        const res = await fetch('http://localhost:5001/api/events');
+        if (!res.ok) throw new Error('no backend');
+        const data = await res.json();
+        setFutureEvents((data && data.futureEvents) || []);
+        setPastEvents((data && data.pastEvents) || []);
+      } catch (err) {
+        console.error('Failed to fetch events:', err.message);
       }
     };
-
     fetchEvents();
   }, []);
 
-  const handleViewDetails = (id) => {
-    navigate(`/events/${id}`); // navigate to the event details page
-  };
-
-  const handleCreateEvent = () => {
-    navigate("/create-event"); // navigate to the create event form
-  };
-
-  if (loading) {
-    return (
-      <Container sx={{ mt: 5, mb: 5 }}>
-        <Grid container justifyContent="center">
-          <CircularProgress />
-        </Grid>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container sx={{ mt: 5, mb: 5 }}>
-        <Typography variant="h6" align="center" color="error">
-          {error}
-        </Typography>
-      </Container>
-    );
-  }
-
   return (
     <Container sx={{ mt: 5, mb: 5 }}>
-      <Typography
-        variant="h4"
-        component="h1"
-        gutterBottom
-        align="center"
-        sx={{ mb: 4, color: "#184b69ff", fontWeight: "bold" }}
-      >
-        All Events
-      </Typography>
-
-      <Grid container spacing={3}>
-        {events.map((event, index) => (
-          <Grid item xs={12} sm={6} md={4} key={event._id}>
-            <Grow in={true} timeout={(index + 1) * 300}>
-              <div>
-                {" "}
-                <StyledCard>
-                  <CardContent>
-                    <Typography
-                      variant="h5"
-                      gutterBottom
-                      sx={{ fontWeight: "bold", color: "#333" }}
-                    >
-                      {event.eventName}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      sx={{ mb: 1 }}
-                    >
-                      {
-                        new Date(
-                          new Date(event.eventDate).setDate(
-                            new Date(event.eventDate).getDate()
-                          )
-                        )
-                          .toISOString()
-                          .split("T")[0]
-                      }
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                      {event.eventDescription.length > 100
-                        ? event.eventDescription.substring(0, 100) + "..."
-                        : event.eventDescription}
-                    </Typography>
-                    <StyledButton
-                      fullWidth
-                      variant="contained"
-                      onClick={() => handleViewDetails(event._id)}
-                    >
-                      View Details
-                    </StyledButton>
-                  </CardContent>
-                </StyledCard>
-              </div>
-            </Grow>
-          </Grid>
-        ))}
-      </Grid>
-
-      {events.length === 0 && (
-        <Collapse in={events.length === 0}>
-          <Paper
-            elevation={2}
-            sx={{ mt: 4, p: 2, backgroundColor: "#184b69ff", color: "#ffffff" }}
-          >
-            <Typography variant="body1" align="center">
-              No events available.
-            </Typography>
-          </Paper>
-        </Collapse>
-      )}
-
-      <Box textAlign="center">
-        <CreateButton variant="contained" onClick={handleCreateEvent}>
-          Create New Event
-        </CreateButton>
-      </Box>
-    </Container>
+        <Fade in={true} timeout={600}>
+          <StyledCard>
+            <CardContent>
+              <Typography
+                variant="h4"
+                component="h1"
+                gutterBottom
+                align="center"
+                sx={{ mb: 4, color: "#184b69ff", fontWeight: "bold" }}
+                >
+                Event List
+              </Typography>
+              <Typography
+                component="p"
+                fontSize={20}
+                align="center"
+                sx={{ mb: 2, color: "#000", fontWeight: "bold" }}
+                >
+                Upcoming Events
+              </Typography>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}>
+                <thead>
+                  <tr>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Name</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Description</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Location</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Required Skills</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Urgency</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {futureEvents.map((event, index) => (
+                    <tr key={index}>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills.join(', ')}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDateISO}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                        {event.assignedVolunteers && event.assignedVolunteers.length > 0 ? (
+                          <div>
+                            {event.assignedVolunteers.map((volunteer, idx) => (
+                              <div key={idx} style={{ marginBottom: '4px' }}>
+                                <strong>{volunteer.volunteerName}</strong>
+                                <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          'Unassigned'
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Typography
+                component="p"
+                fontSize={20}
+                align="center"
+                sx={{ mb: 2, color: "#000", fontWeight: "bold" }}
+                >
+                Past Events
+                </Typography>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Name</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Description</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Location</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Required Skills</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Urgency</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pastEvents.map((event, index) => (
+                    <tr key={index}>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills.join(', ')}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDateISO}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                        {event.assignedVolunteers && event.assignedVolunteers.length > 0 ? (
+                          <div>
+                            {event.assignedVolunteers.map((volunteer, idx) => (
+                              <div key={idx} style={{ marginBottom: '4px' }}>
+                                <strong>{volunteer.volunteerName}</strong>
+                                <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          'No Volunteer'
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </StyledCard>
+        </Fade>
+    </Container>  
   );
 };
 

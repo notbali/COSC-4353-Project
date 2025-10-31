@@ -24,18 +24,48 @@ const VolunteerHistory = () => {
   const [pastEvents, setPastEvents] = React.useState([]);
 
   React.useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchUserEvents = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/events');
-        if (!res.ok) throw new Error('no backend');
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          console.error('No user logged in');
+          return;
+        }
+        
+        const res = await fetch(`http://localhost:5001/api/volunteer-history/${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch user events');
         const data = await res.json();
-        setFutureEvents((data && data.futureEvents) || []);
-        setPastEvents((data && data.pastEvents) || []);
+        
+        // Separate into future and past events based on eventDate
+        const now = new Date();
+        const userFutureEvents = [];
+        const userPastEvents = [];
+        
+        data.forEach(historyRecord => {
+          if (historyRecord.eventId && historyRecord.eventId.eventDate) {
+            const eventDate = new Date(historyRecord.eventId.eventDate);
+            const eventWithHistory = {
+              ...historyRecord.eventId,
+              eventDateISO: eventDate.toISOString().split('T')[0],
+              participationStatus: historyRecord.status,
+              registeredAt: historyRecord.createdAt
+            };
+            
+            if (eventDate >= now) {
+              userFutureEvents.push(eventWithHistory);
+            } else {
+              userPastEvents.push(eventWithHistory);
+            }
+          }
+        });
+        
+        setFutureEvents(userFutureEvents);
+        setPastEvents(userPastEvents);
       } catch (err) {
-        console.error('Failed to fetch events:', err.message);
+        console.error('Failed to fetch user events:', err.message);
       }
     };
-    fetchEvents();
+    fetchUserEvents();
   }, []);
 
   return (
@@ -50,7 +80,7 @@ const VolunteerHistory = () => {
                 align="center"
                 sx={{ mb: 4, color: "#184b69ff", fontWeight: "bold" }}
                 >
-                Volunteer History
+                My Volunteer History
               </Typography>
               <Typography
                 component="p"
@@ -69,7 +99,7 @@ const VolunteerHistory = () => {
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Required Skills</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Urgency</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
-                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>My Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -78,22 +108,13 @@ const VolunteerHistory = () => {
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills.join(', ')}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills?.join(', ') || 'N/A'}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDateISO}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        {event.assignedVolunteers && event.assignedVolunteers.length > 0 ? (
-                          <div>
-                            {event.assignedVolunteers.map((volunteer, idx) => (
-                              <div key={idx} style={{ marginBottom: '4px' }}>
-                                <strong>{volunteer.volunteerName}</strong>
-                                <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          'Unassigned'
-                        )}
+                        <span style={{ color: '#184b69ff', fontWeight: 'bold' }}>
+                          {event.participationStatus || 'Registered'}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -116,7 +137,7 @@ const VolunteerHistory = () => {
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Required Skills</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Urgency</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
-                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>My Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -125,22 +146,13 @@ const VolunteerHistory = () => {
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills.join(', ')}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills?.join(', ') || 'N/A'}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDateISO}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        {event.assignedVolunteers && event.assignedVolunteers.length > 0 ? (
-                          <div>
-                            {event.assignedVolunteers.map((volunteer, idx) => (
-                              <div key={idx} style={{ marginBottom: '4px' }}>
-                                <strong>{volunteer.volunteerName}</strong>
-                                <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          'No Volunteer'
-                        )}
+                        <span style={{ color: '#184b69ff', fontWeight: 'bold' }}>
+                          {event.participationStatus || 'Completed'}
+                        </span>
                       </td>
                     </tr>
                   ))}
