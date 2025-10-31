@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const Volunteer = require('../models/Volunteer');
 const EventDetails = require('../models/Event');
 const { UserProfile } = require('../models/User');
 

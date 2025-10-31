@@ -185,7 +185,7 @@ const VolunteerMatchingForm = () => {
                   <Typography variant="body2"><b>Location:</b> {event.location}</Typography>
                   <Typography variant="body2"><b>Required Skills:</b> {event.requiredSkills}</Typography>
                   <Typography variant="body2"><b>Urgency:</b> {event.urgency}</Typography>
-                  <Typography variant="body2"><b>Date:</b> {event.eventDate}</Typography>
+                  <Typography variant="body2"><b>Date:</b> {event.eventDateISO}</Typography>
                   <Box mt={1}>
                     <StyledButton
                       

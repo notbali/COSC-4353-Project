@@ -1,13 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const Volunteer = require('../models/Volunteer');
+const User = require('../models/User');
 const EventDetails = require('../models/Event');
 const VolunteerHistory = require('../models/VolunteerHistory');
 
 // List Volunteers
 router.get('/volunteers', async (req, res) => {
 	try {
-		const volunteers = await Volunteer.find({});
+		const userProfiles = await User.UserProfile.find({}).populate('userId', 'username');
+		
+		// Transform UserProfile data to match expected volunteer format
+		const volunteers = userProfiles.map(profile => ({
+			id: profile.userId._id, // Use the UserCredentials _id as the volunteer ID
+			name: profile.fullName,
+			address1: profile.address,
+			address2: '', // UserProfile doesn't have address2, set to empty
+			city: profile.city,
+			state: profile.state,
+			zipCode: profile.zipcode,
+			skills: profile.skills || [],
+			availability: profile.availability || []
+		}));
+		
 		res.status(200).json(volunteers);
 	} catch (error) {
 		res.status(500).json({ message: 'Error fetching volunteers', error });
