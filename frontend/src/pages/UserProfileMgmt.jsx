@@ -27,7 +27,7 @@ const UserProfileMgmt = ({userId}) => {
 
   // State to store user data
   const [user, setUser] = useState({
-    name: "",
+    fullName: "",
     address1: "",
     address2: "",
     city: "",
@@ -264,16 +264,16 @@ const UserProfileMgmt = ({userId}) => {
               <Typography component="div" textAlign="center">
                 <div style={{marginTop: "10px", marginBottom: "10px"}}>
                   <TextField 
-                    id="name" 
+                    id="fullName" 
                     helperText="Max 50 characters"
                     label="Full Name" 
                     variant="outlined" 
                     size="small"
-                    value={user.name}
+                    value={user.fullName}
                     onChange={handleChange}
                     inputProps={{
                       maxLength:50,
-                      name: "name"
+                      name: "fullName"
                     }}
                   />
                 </div>

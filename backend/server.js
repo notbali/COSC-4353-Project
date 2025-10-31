@@ -22,7 +22,21 @@ app.use('/api', matchRoutes);
 // Registration route
 app.post('/api/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, fullName, address1, city, state, zip } = req.body;
+
+    // Validation for required fields
+    const missing = [];
+    if (!username) missing.push('username');
+    if (!email) missing.push('email');
+    if (!password) missing.push('password');
+    if (!fullName) missing.push('fullName');
+    if (!address1) missing.push('address1');
+    if (!city) missing.push('city');
+    if (!state) missing.push('state');
+    if (!zip) missing.push('zip');
+    if (missing.length) {
+      return res.status(400).json({ message: `Missing required fields: ${missing.join(', ')}` });
+    }
     
     // Check if user exists
     const existingUser = await UserCredentials.findOne({ 
@@ -45,14 +59,15 @@ app.post('/api/register', async (req, res) => {
     
     await userCredentials.save();
     
-    // Create user profile with default values
+    // Create user profile using provided values
     const userProfile = new UserProfile({
       userId: userCredentials._id,
-      fullName: '',
-      address: '',
-      city: '',
-      state: '',
-      zipcode: '',
+      fullName,
+      address1,
+      address2: '',
+      city,
+      state,
+      zip,
       skills: [],
       preferences: '',
       availability: []
@@ -129,20 +144,7 @@ app.get('/api/profile', async (req, res) => {
     // Find user profile
     const userProfile = await UserProfile.findOne({ userId: userCredentials._id });
     if (!userProfile) {
-      // Create default profile if it doesn't exist
-      const newProfile = new UserProfile({
-        userId: userCredentials._id,
-        fullName: '',
-        address: '',
-        city: '',
-        state: '',
-        zipcode: '',
-        skills: [],
-        preferences: '',
-        availability: []
-      });
-      await newProfile.save();
-      return res.json(newProfile);
+      return res.status(404).json({ message: 'Profile not found' });
     }
 
     // Return profile

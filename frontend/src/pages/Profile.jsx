@@ -111,7 +111,7 @@ const Profile = ({userId,isLoggedIn}) => {
             >
               <div>
                 <h2>
-                  <b>{user.name}</b>
+                  <b>{user.fullName}</b>
                   {/* <b>John Doe</b> */}
                 </h2>
               </div>
