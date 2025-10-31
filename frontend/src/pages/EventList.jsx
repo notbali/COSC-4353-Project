@@ -22,6 +22,8 @@ const StyledCard = styled(Card)({
 const EventList = () => {
   const [futureEvents, setFutureEvents] = React.useState([]);
   const [pastEvents, setPastEvents] = React.useState([]);
+  const [currentUserId, setCurrentUserId] = React.useState(null);
+  const [currentUserName, setCurrentUserName] = React.useState('');
 
   React.useEffect(() => {
     const fetchEvents = async () => {
@@ -35,8 +37,68 @@ const EventList = () => {
         console.error('Failed to fetch events:', err.message);
       }
     };
+    
+    // Get current user info
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName');
+    setCurrentUserId(userId);
+    setCurrentUserName(userName);
+    
     fetchEvents();
   }, []);
+
+  const handleAssignToggle = async (event) => {
+    if (!currentUserId || !currentUserName) {
+      alert('Please log in to assign yourself to events');
+      return;
+    }
+
+    const isCurrentlyAssigned = event.assignedVolunteers && 
+      event.assignedVolunteers.some(volunteer => volunteer.volunteerId === currentUserId);
+
+    try {
+      if (isCurrentlyAssigned) {
+        // Unassign logic
+        const response = await fetch(`http://localhost:5001/api/volunteer-history/${currentUserId}/${event._id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          alert('Successfully unregistered from event!');
+          // Refresh the events to show updated assignments
+          window.location.reload();
+        } else {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to unregister from event');
+        }
+      } else {
+        // Assign logic
+        const response = await fetch('http://localhost:5001/api/volunteer-history/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: currentUserId,
+            eventId: event._id,
+            volunteerName: currentUserName
+          })
+        });
+
+        if (response.ok) {
+          alert('Successfully registered for event!');
+          // Refresh the events to show updated assignments
+          window.location.reload();
+        } else {
+          const errorData = await response.json();
+          alert(errorData.message || 'Failed to register for event');
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling assignment:', error);
+      alert('Failed to update assignment');
+    }
+  };
 
   return (
     <Container sx={{ mt: 5, mb: 5 }}>
@@ -70,6 +132,7 @@ const EventList = () => {
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Urgency</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
+                    {currentUserId && <th style={{ border: '1px solid #ddd', padding: '8px', width: '85px' }}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -95,6 +158,28 @@ const EventList = () => {
                           'Unassigned'
                         )}
                       </td>
+                      {currentUserId && (
+                        <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
+                          <button
+                            onClick={() => handleAssignToggle(event)}
+                            style={{
+                              backgroundColor: event.assignedVolunteers && 
+                                event.assignedVolunteers.some(volunteer => volunteer.volunteerId === currentUserId) 
+                                ? '#dc3545' : '#184b69ff',
+                              color: 'white',
+                              border: 'none',
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            {event.assignedVolunteers && 
+                              event.assignedVolunteers.some(volunteer => volunteer.volunteerId === currentUserId) 
+                              ? 'Cancel' : 'Sign Up'}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

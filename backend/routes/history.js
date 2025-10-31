@@ -29,6 +29,22 @@ router.get('/volunteers', async (req, res) => {
 	}
 });
 
+// Get volunteer history for a specific user
+router.get('/volunteer-history/:userId', async (req, res) => {
+	try {
+		const { userId } = req.params;
+		const history = await VolunteerHistory.find({ userId })
+			.populate('eventId', 'eventName eventDescription location eventDate requiredSkills urgency')
+			.sort({ createdAt: -1 });
+		
+		console.log(`Found ${history.length} volunteer history records for user ${userId}`);
+		res.status(200).json(history);
+	} catch (error) {
+		console.error('Error fetching volunteer history:', error);
+		res.status(500).json({ message: 'Error fetching volunteer history', error });
+	}
+});
+
 // List Events with assigned volunteers
 router.get('/events', async (req, res) => {
 	try {
@@ -63,22 +79,6 @@ router.get('/events', async (req, res) => {
 		res.status(200).json({ futureEvents, pastEvents });
 	} catch (error) {
 		res.status(500).json({ message: 'Error fetching events', error });
-	}
-});
-
-// Get volunteer history for a specific user
-router.get('/volunteer-history/:userId', async (req, res) => {
-	try {
-		const { userId } = req.params;
-		const history = await VolunteerHistory.find({ userId })
-			.populate('eventId', 'eventName eventDescription location eventDate requiredSkills urgency')
-			.sort({ createdAt: -1 });
-		
-		console.log(`Found ${history.length} volunteer history records for user ${userId}`);
-		res.status(200).json(history);
-	} catch (error) {
-		console.error('Error fetching volunteer history:', error);
-		res.status(500).json({ message: 'Error fetching volunteer history', error });
 	}
 });
 
@@ -123,6 +123,30 @@ router.post('/volunteer-history', async (req, res) => {
 			});
 		}
 		res.status(500).json({ message: 'Error creating volunteer history', error });
+	}
+});
+
+// Remove volunteer from event (delete history record)
+router.delete('/volunteer-history/:userId/:eventId', async (req, res) => {
+	try {
+		const { userId, eventId } = req.params;
+		
+		// Find and delete the volunteer history record
+		const deletedRecord = await VolunteerHistory.findOneAndDelete({ userId, eventId });
+		if (!deletedRecord) {
+			return res.status(404).json({ message: 'Volunteer registration not found' });
+		}
+		
+		// Update event volunteer count
+		const event = await EventDetails.findById(eventId);
+		if (event) {
+			event.currentVolunteers = Math.max((event.currentVolunteers || 1) - 1, 0);
+			await event.save();
+		}
+		
+		res.status(200).json({ message: 'Successfully unregistered from event' });
+	} catch (error) {
+		res.status(500).json({ message: 'Error removing volunteer from event', error });
 	}
 });
 
