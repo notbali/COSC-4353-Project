@@ -11,17 +11,17 @@ import {
 import { styled } from "@mui/system";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import {TextField, MenuItem, FormHelperText} from '@mui/material';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import ListItemText from '@mui/material/ListItemText';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { TextField, MenuItem, FormHelperText } from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import ListItemText from "@mui/material/ListItemText";
+import Select from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+// import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 
-const UserProfileMgmt = ({userId}) => {
+const UserProfileMgmt = ({ userId }) => {
   const navigate = useNavigate();
   const [checked] = useState(true);
 
@@ -43,8 +43,8 @@ const UserProfileMgmt = ({userId}) => {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(`http://localhost:5001/api/profile`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` 
-        }});
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -55,11 +55,56 @@ const UserProfileMgmt = ({userId}) => {
 
   // List of states
   const states = [
-    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DE",
+    "FL",
+    "GA",
+    "HI",
+    "ID",
+    "IL",
+    "IN",
+    "IA",
+    "KS",
+    "KY",
+    "LA",
+    "ME",
+    "MD",
+    "MA",
+    "MI",
+    "MN",
+    "MS",
+    "MO",
+    "MT",
+    "NE",
+    "NV",
+    "NH",
+    "NJ",
+    "NM",
+    "NY",
+    "NC",
+    "ND",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VT",
+    "VA",
+    "WA",
+    "WV",
+    "WI",
+    "WY",
   ];
 
   // List of skills
@@ -128,7 +173,7 @@ const UserProfileMgmt = ({userId}) => {
     "Web Development",
     "Wellness Coaching",
     "Wildlife Care",
-    "Writing"
+    "Writing",
   ];
 
   // Menu props for skill selction
@@ -150,39 +195,46 @@ const UserProfileMgmt = ({userId}) => {
 
   // Function to handle skill changes
   const handleSkillsChange = (e) => {
-      const { target: { value } } = e;
-      setUser((prev) => ({
-      ...prev, skills: typeof value === "string" ? value.split(",") : value,
+    const {
+      target: { value },
+    } = e;
+    setUser((prev) => ({
+      ...prev,
+      skills: typeof value === "string" ? value.split(",") : value,
     }));
-  }
+  };
 
   // Function to handle availability changes
   const handleAvailabilityChange = (e) => {
     if (!e) return;
     const formatted = e.format("YYYY-MM-DD");
-    setUser((prev) => { 
-      if (prev.availability.includes(formatted)) 
-        return prev;
-      return {...prev, availability: [...prev.availability, formatted] }; 
-    }); 
-  }
+    setUser((prev) => {
+      if (prev.availability.includes(formatted)) return prev;
+      return { ...prev, availability: [...prev.availability, formatted] };
+    });
+  };
 
   // Function to handle availability removal
   const handleAvailabilityRemove = (e) => {
     setUser((prev) => ({
-      ...prev, availability: prev.availability.filter((date) => date !== e)
-    })); 
-  }
+      ...prev,
+      availability: prev.availability.filter((date) => date !== e),
+    }));
+  };
 
   // Function to apply changes
-  const handleApply = async e => {
+  const handleApply = async (e) => {
     e.preventDefault();
     console.log("Submitting user update:", user);
-    try{
-      const response = await axios.put(`http://localhost:5001/api/profile/edit`, user, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` 
-      }});
-      
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/api/profile/edit`,
+        user,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+
       console.log("Update success!", response.data);
       navigate(`/profile/${userId}`);
     } catch (err) {
@@ -237,19 +289,16 @@ const UserProfileMgmt = ({userId}) => {
               marginBottom: "0px",
               fontWeight: "bold",
               color: "#184b69ff",
-            }} 
+            }}
           >
             Edit Profile
           </Typography>
-          <Typography 
-            textAlign={"center"}
-            sx={{marginBottom: "20px"}}
-          >
+          <Typography textAlign={"center"} sx={{ marginBottom: "20px" }}>
             <StyledButton variant="contained" onClick={handleApply}>
-                Apply
+              Apply
             </StyledButton>
             <StyledButton variant="contained" onClick={handleCancel}>
-                Cancel
+              Cancel
             </StyledButton>
           </Typography>
           <Fade in={checked} timeout={600}>
@@ -262,67 +311,67 @@ const UserProfileMgmt = ({userId}) => {
               }}
             >
               <Typography component="div" textAlign="center">
-                <div style={{marginTop: "10px", marginBottom: "10px"}}>
-                  <TextField 
-                    id="fullName" 
+                <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+                  <TextField
+                    id="fullName"
                     helperText="Max 50 characters"
-                    label="Full Name" 
-                    variant="outlined" 
+                    label="Full Name"
+                    variant="outlined"
                     size="small"
                     value={user.fullName}
                     onChange={handleChange}
                     inputProps={{
-                      maxLength:50,
-                      name: "fullName"
+                      maxLength: 50,
+                      name: "fullName",
                     }}
                   />
                 </div>
-                <div style={{marginBottom: "10px"}}>
-                  <TextField 
-                    id="address1" 
+                <div style={{ marginBottom: "10px" }}>
+                  <TextField
+                    id="address1"
                     helperText="Max 100 characters"
-                    label="Address 1" 
-                    variant="outlined" 
+                    label="Address 1"
+                    variant="outlined"
                     size="small"
                     value={user.address1}
                     onChange={handleChange}
                     inputProps={{
-                      maxLength:100,
-                      name: "address1"
+                      maxLength: 100,
+                      name: "address1",
                     }}
                   />
                 </div>
-                <div style={{marginBottom: "10px"}}>
-                  <TextField 
-                    id="address2" 
+                <div style={{ marginBottom: "10px" }}>
+                  <TextField
+                    id="address2"
                     helperText="Max 100 characters"
-                    label="Address 2" 
-                    variant="outlined" 
+                    label="Address 2"
+                    variant="outlined"
                     size="small"
                     value={user.address2}
                     onChange={handleChange}
                     inputProps={{
-                      maxLength:100,
-                      name: "address2"
+                      maxLength: 100,
+                      name: "address2",
                     }}
                   />
                 </div>
-                <div style={{marginBottom: "10px"}}>
-                  <TextField 
-                    id="city" 
+                <div style={{ marginBottom: "10px" }}>
+                  <TextField
+                    id="city"
                     helperText="Max 100 characters"
-                    label="City" 
-                    variant="outlined" 
+                    label="City"
+                    variant="outlined"
                     size="small"
                     value={user.city}
                     onChange={handleChange}
                     inputProps={{
-                      maxLength:100,
-                      name: "city"
+                      maxLength: 100,
+                      name: "city",
                     }}
                   />
                 </div>
-                <div style={{marginBottom: "10px"}}>
+                <div style={{ marginBottom: "10px" }}>
                   <TextField
                     id="state"
                     helperText="Please select your state"
@@ -341,89 +390,116 @@ const UserProfileMgmt = ({userId}) => {
                     ))}
                   </TextField>
                 </div>
-                <div style={{marginBottom: "10px"}}>
-                  <TextField 
+                <div style={{ marginBottom: "10px" }}>
+                  <TextField
                     id="zip"
-                    helperText="Max 9, Min 5 characters" 
-                    label="Zip Code" 
-                    variant="outlined" 
+                    helperText="Max 9, Min 5 characters"
+                    label="Zip Code"
+                    variant="outlined"
                     size="small"
                     value={user.zip}
                     inputProps={{
-                      maxLength:9,
-                      minLength:5,
+                      maxLength: 9,
+                      minLength: 5,
                       onChange: handleChange,
-                      name: "zip"
+                      name: "zip",
                     }}
                   />
                 </div>
-                <div style={{marginBottom: "10px"}}>
-                    <FormControl sx={{ m: 1, width: 250 }}>
-                      <InputLabel id="skills-label">Skills</InputLabel>
-                      <Select
-                        labelId="skills-label"
-                        id="skills"
-                        multiple
-                        value={user.skills}
-                        onChange={handleSkillsChange}
-                        input={<OutlinedInput label="Skills" />}
-                        renderValue={(selected) => selected.join(', ')}
-                        MenuProps={MenuProps}
-                      >
-                        {skillOptions.map((name) => (
-                          <MenuItem key={name} value={name}>
-                            <Checkbox checked={user.skills.includes(name)} />
-                            <ListItemText primary={name} />
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      <FormHelperText>Please select your skills</FormHelperText>
-                    </FormControl>
+                <div style={{ marginBottom: "10px" }}>
+                  <FormControl sx={{ m: 1, width: 250 }}>
+                    <InputLabel id="skills-label">Skills</InputLabel>
+                    <Select
+                      labelId="skills-label"
+                      id="skills"
+                      multiple
+                      value={user.skills}
+                      onChange={handleSkillsChange}
+                      input={<OutlinedInput label="Skills" />}
+                      renderValue={(selected) => selected.join(", ")}
+                      MenuProps={MenuProps}
+                    >
+                      {skillOptions.map((name) => (
+                        <MenuItem key={name} value={name}>
+                          <Checkbox checked={user.skills.includes(name)} />
+                          <ListItemText primary={name} />
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>Please select your skills</FormHelperText>
+                  </FormControl>
                 </div>
-                <div style={{marginBottom: "10px", marginLeft: "50px", marginRight: "50px"}}>
-                  <TextField 
-                    id="preferences" 
+                <div
+                  style={{
+                    marginBottom: "10px",
+                    marginLeft: "50px",
+                    marginRight: "50px",
+                  }}
+                >
+                  <TextField
+                    id="preferences"
                     helperText="Max 1000 characters"
                     multiline
                     rows={4}
                     fullWidth
-                    label="Preferences" 
-                    variant="outlined" 
+                    label="Preferences"
+                    variant="outlined"
                     size="small"
                     value={user.preferences}
                     onChange={handleChange}
                     inputProps={{
-                      maxLength:1000,
-                      name: "preferences"
+                      maxLength: 1000,
+                      name: "preferences",
                     }}
                   />
                 </div>
-                <div style={{display: "flex", justifyContent: "center", marginBottom: "10px"}}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: "10px",
+                  }}
+                >
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DemoContainer components={['DatePicker']}>
-                      <FormControl>
+                    <FormControl>
                       <DatePicker
-                          label="Add Availability" 
-                          onChange={handleAvailabilityChange}
-                          slotProps={{
-                            textField: {
-                              id: "availability",
-                              name: "availability",
-                              variant: "outlined",
-                              size: "small",
-                            }
-                          }}
-                        />
-                        <FormHelperText>Please select your availability</FormHelperText>
-                      </FormControl>
-                    </DemoContainer>
+                        label="Add Availability"
+                        onChange={handleAvailabilityChange}
+                        slotProps={{
+                          textField: {
+                            id: "availability",
+                            name: "availability",
+                            variant: "outlined",
+                            size: "small",
+                          },
+                        }}
+                      />
+                      <FormHelperText>
+                        Please select your availability
+                      </FormHelperText>
+                    </FormControl>
                   </LocalizationProvider>
                 </div>
-                <div style={{marginBottom: "10px"}}>
+                <div style={{ marginBottom: "10px" }}>
                   {user.availability.map((date) => (
-                    <div key={date} style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "5px" }}>
-                      <Typography variant="body2" sx={{ marginRight: "10px" }}>{date}</Typography>
-                      <Button variant="outlined" size="small" color="error" onClick={() => handleAvailabilityRemove(date)}>
+                    <div
+                      key={date}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: "5px",
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ marginRight: "10px" }}>
+                        {date}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
+                        onClick={() => handleAvailabilityRemove(date)}
+                      >
                         Remove
                       </Button>
                     </div>
@@ -436,6 +512,6 @@ const UserProfileMgmt = ({userId}) => {
       </Fade>
     </Box>
   );
-}
+};
 
 export default UserProfileMgmt;
