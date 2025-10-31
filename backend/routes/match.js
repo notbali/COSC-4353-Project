@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const EventDetails = require('../models/Event');
 const { UserProfile } = require('../models/User');
+const VolunteerHistory = require('../models/VolunteerHistory');
 
 // Get matching events for a volunteer 
 router.get('/match/:volunteerId', async (req, res) => {
@@ -30,7 +31,24 @@ router.get('/match/:volunteerId', async (req, res) => {
             return userProfile.availability.includes(ev.eventDateISO);
         });
 
-        return res.status(200).json(matching);
+        // Check volunteer history for each matching event
+        const eventsWithMatchStatus = await Promise.all(
+            matching.map(async (event) => {
+                const historyRecord = await VolunteerHistory.findOne({
+                    userId: volunteerId,
+                    eventId: event._id
+                });
+                
+                return {
+                    ...event.toObject(),
+                    matchedVolunteer: historyRecord ? volunteerId : null,
+                    matchedVolunteerName: historyRecord ? historyRecord.volunteerName : null,
+                    matchedAt: historyRecord ? historyRecord.createdAt : null
+                };
+            })
+        );
+
+        return res.status(200).json(eventsWithMatchStatus);
     } catch (error) {
         res.status(500).json({ message: 'Error finding matching events', error });
     }
@@ -48,17 +66,22 @@ router.post('/match', async (req, res) => {
     const event = await EventDetails.findById(eventId);
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    // Check if event is still open
     if (event.status !== 'Open') {
       return res.status(400).json({ message: 'Event is not open for registration' });
     }
 
-    // Check if event has space
     if (event.currentVolunteers >= event.maxVolunteers) {
       return res.status(400).json({ message: 'Event is full' });
     }
 
-    // Update event with matched volunteer info
+    const existingHistory = await VolunteerHistory.findOne({
+      userId: volunteerId,
+      eventId: eventId
+    });
+    if (existingHistory) {
+      return res.status(400).json({ message: 'Volunteer already matched to this event' });
+    }
+
     event.currentVolunteers = (event.currentVolunteers || 0) + 1;
     await event.save();
 

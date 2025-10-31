@@ -73,29 +73,49 @@ const VolunteerMatchingForm = () => {
   const handleMatch = async (eventObj) => {
     setIsSubmitting(true);
     try {
-      const res = await fetch('http://localhost:5001/api/match', {
+      const eventId = eventObj.id || eventObj._id;
+      
+      // Create the match record
+      const matchRes = await fetch('http://localhost:5001/api/match', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ volunteerId: selectedVolunteer, eventId: eventObj.id }),
+        body: JSON.stringify({ volunteerId: selectedVolunteer, eventId: eventId }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+      if (!matchRes.ok) {
+        const err = await matchRes.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to match');
       }
-      const body = await res.json();
+      const matchBody = await matchRes.json();
+
+      // Add to volunteer history
+      const historyRes = await fetch('http://localhost:5001/api/volunteer-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: selectedVolunteer, 
+          eventId: eventId,
+          volunteerName: selectedVolunteerObj ? selectedVolunteerObj.name : 'Unknown Volunteer'
+        }),
+      });
+      
+      if (!historyRes.ok) {
+        const histErr = await historyRes.json().catch(() => ({}));
+        console.warn('Failed to create history record:', histErr.message);
+      }
 
       setMatchingEvents(prev => prev.map(ev => {
-        if (Number(ev.id) === Number(eventObj.id)) {
-          const updated = body.event || { ...ev };
+        const evId = ev.id || ev._id;
+        if (evId === eventId) {
+          const updated = matchBody.event || { ...ev };
           updated.matchedVolunteer = selectedVolunteer;
           updated.matchedVolunteerName = (selectedVolunteerObj && selectedVolunteerObj.name) || updated.matchedVolunteerName;
-          updated.matchedAt = (body.event && body.event.matchedAt) || new Date().toISOString();
+          updated.matchedAt = (matchBody.event && matchBody.event.matchedAt) || new Date().toISOString();
           return updated;
         }
         return ev;
       }));
 
-      window.alert('Volunteer matched to event');
+      window.alert('Volunteer matched to event and added to history!');
     } catch (err) {
       console.error(err);
       window.alert('Error matching volunteer: ' + (err.message || err));
@@ -165,7 +185,7 @@ const VolunteerMatchingForm = () => {
               align="center"
               sx={{ mb: 1, color: "#000", fontWeight: "bold" }}
             >
-              Here are some events that match {selectedVolunteerObj.name}'s skills:
+              {matchingEvents && matchingEvents.length > 0 ? `Here are some events that match ${selectedVolunteerObj.name}'s skills:` : `No matching events found for ${selectedVolunteerObj.name}.`}
             </Typography>
             <Box mt={2}>
               {matchingEvents.map((event) => (
