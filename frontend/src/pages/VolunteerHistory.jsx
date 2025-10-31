@@ -69,7 +69,7 @@ const VolunteerHistory = () => {
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Required Skills</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Urgency</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
-                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteer</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -78,10 +78,23 @@ const VolunteerHistory = () => {
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills.join(', ')}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDate}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.matchedVolunteerName || 'Unassigned'}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDateISO}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                        {event.assignedVolunteers && event.assignedVolunteers.length > 0 ? (
+                          <div>
+                            {event.assignedVolunteers.map((volunteer, idx) => (
+                              <div key={idx} style={{ marginBottom: '4px' }}>
+                                <strong>{volunteer.volunteerName}</strong>
+                                <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          'Unassigned'
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -103,7 +116,7 @@ const VolunteerHistory = () => {
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Required Skills</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Urgency</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
-                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteer</th>
+                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -112,10 +125,22 @@ const VolunteerHistory = () => {
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventName}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDescription}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.location}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.requiredSkills.join(', ')}</td>
                       <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.urgency}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDate}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.matchedVolunteerName || 'No Volunteer'}
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{event.eventDateISO}</td>
+                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                        {event.assignedVolunteers && event.assignedVolunteers.length > 0 ? (
+                          <div>
+                            {event.assignedVolunteers.map((volunteer, idx) => (
+                              <div key={idx} style={{ marginBottom: '4px' }}>
+                                <strong>{volunteer.volunteerName}</strong>
+                                <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          'No Volunteer'
+                        )}
                       </td>
                     </tr>
                   ))}

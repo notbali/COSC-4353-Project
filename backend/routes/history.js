@@ -28,13 +28,33 @@ router.get('/volunteers', async (req, res) => {
 	}
 });
 
-// List Events
+// List Events with assigned volunteers
 router.get('/events', async (req, res) => {
 	try {
 		const events = await EventDetails.find({});
 		const currentDate = new Date().toISOString().split('T')[0];
-		const futureEvents = events.filter(e => e.eventDateISO && e.eventDateISO >= currentDate);
-		const pastEvents = events.filter(e => e.eventDateISO && e.eventDateISO < currentDate);
+		
+		// Get volunteer assignments for each event
+		const eventsWithVolunteers = await Promise.all(
+			events.map(async (event) => {
+				const volunteerHistories = await VolunteerHistory.find({ eventId: event._id });
+				const assignedVolunteers = volunteerHistories.map(history => ({
+					volunteerId: history.userId,
+					volunteerName: history.volunteerName,
+					status: history.status,
+					assignedAt: history.createdAt
+				}));
+				
+				return {
+					...event.toObject(),
+					assignedVolunteers,
+					assignedVolunteerNames: assignedVolunteers.map(v => v.volunteerName).join(', ') || 'Unassigned'
+				};
+			})
+		);
+		
+		const futureEvents = eventsWithVolunteers.filter(e => e.eventDateISO && e.eventDateISO >= currentDate);
+		const pastEvents = eventsWithVolunteers.filter(e => e.eventDateISO && e.eventDateISO < currentDate);
 
 		futureEvents.sort((a, b) => (a.eventDateISO).localeCompare(b.eventDateISO));
 		pastEvents.sort((a, b) => (b.eventDateISO).localeCompare(a.eventDateISO));

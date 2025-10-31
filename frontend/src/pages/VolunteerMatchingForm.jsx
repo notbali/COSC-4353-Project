@@ -203,7 +203,7 @@ const VolunteerMatchingForm = () => {
                   <Typography variant="subtitle1"><b>{event.eventName}</b></Typography>
                   <Typography variant="body2"><b>Description:</b> {event.eventDescription}</Typography>
                   <Typography variant="body2"><b>Location:</b> {event.location}</Typography>
-                  <Typography variant="body2"><b>Required Skills:</b> {event.requiredSkills}</Typography>
+                  <Typography variant="body2"><b>Required Skills:</b> {event.requiredSkills.join(', ')}</Typography>
                   <Typography variant="body2"><b>Urgency:</b> {event.urgency}</Typography>
                   <Typography variant="body2"><b>Date:</b> {event.eventDateISO}</Typography>
                   <Box mt={1}>
