@@ -1,46 +1,100 @@
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const profileModule = require('../routes/profile');
+
+// Mock Mongoose model
+jest.mock('../models/User', () => {
+  const userData = [{ _id: '123', username: 'testuser', email: 'test@example.com', password: 'hashed' }];
+  const profileData = {
+    '123': {
+      userId: '123',
+      fullName: '',
+      address1: '',
+      address2: '',
+      city: '',
+      state: '',
+      zip: '',
+      skills: [],
+      preferences: '',
+      availability: []
+    }
+  };
+
+  return {
+    UserCredentials: {
+      findOne: jest.fn(async query => {
+        if (query.username) return userData.find(u => u.username === query.username) || null;
+        if (query._id) return userData.find(u => u._id === query._id) || null;
+        return null;
+      })
+    },
+    UserProfile: {
+      findOne: jest.fn(async query => profileData[query.userId] || null),
+      save: jest.fn(async () => {}),
+      __mockProfiles: profileData
+    }
+  };
+});
+
+const { UserCredentials, UserProfile } = require('../models/User');
+const profileRoutes = require('../routes/profile');
 
 const app = express();
 app.use(express.json());
-// mount the exported router
-app.use('/api', profileModule.router || profileModule);
+app.use('/api', profileRoutes);
 
-describe('Profile Routes - Full Coverage', () => {
+describe('Profile Routes (Mocked DB) - Full Coverage', () => {
   let token;
 
   beforeAll(() => {
-    // Create a token for the test user
-    token = jwt.sign({ username: 'testuser' }, 'your_jwt_secret');
+    token = jwt.sign({ username: 'testuser', userId: '123' }, 'your_jwt_secret');
   });
 
   beforeEach(() => {
-    // clear profiles before each test
-    Object.keys(profileModule.userProfiles).forEach(k => delete profileModule.userProfiles[k]);
+    // reset mock implementations if changed
+    jest.clearAllMocks();
   });
 
-  it('should create a default profile if none exists', async () => {
+  it('should fetch an existing profile', async () => {
     const res = await request(app)
       .get('/api/profile')
       .set('Authorization', `Bearer ${token}`);
     
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('name', '');
-    expect(res.body).toHaveProperty('skills');
+    expect(res.body).toHaveProperty('fullName', '');
+    expect(UserCredentials.findOne).toHaveBeenCalledWith({ username: 'testuser' });
   });
 
-  it('should update the profile', async () => {
+  it('should return 404 if profile not found', async () => {
+    UserProfile.findOne.mockResolvedValueOnce(null);
+
+    const res = await request(app)
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toMatch(/profile not found/i);
+  });
+
+  it('should update profile successfully', async () => {
+    // Mock UserCredentials and UserProfile
+    UserCredentials.findOne.mockResolvedValue({ _id: '123', username: 'testuser' });
+    UserProfile.findOne.mockResolvedValue({
+      userId: '123',
+      city: 'Old City',
+      save: jest.fn().mockResolvedValue(true),  // ✅ add fake save
+    });
+
+    const token = jwt.sign({ username: 'testuser', userId: '123' }, 'your_jwt_secret');
+
     const res = await request(app)
       .put('/api/profile/edit')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'New Name', city: 'New City' });
-    
+      .send({ city: 'New City' });
+
     expect(res.statusCode).toBe(200);
-    expect(res.body.message).toBe('Profile updated!');
-    expect(profileModule.userProfiles['testuser'].name).toBe('New Name');
-    expect(profileModule.userProfiles['testuser'].city).toBe('New City');
+    expect(res.body.message).toMatch(/updated/i);
+    expect(UserProfile.findOne).toHaveBeenCalledWith({ userId: '123' });
   });
 
   it('should return 401 without token', async () => {
@@ -53,47 +107,35 @@ describe('Profile Routes - Full Coverage', () => {
     const res = await request(app)
       .get('/api/profile')
       .set('Authorization', 'Bearer invalidtoken');
-    // invalid token will trigger jwt.verify thrown error -> 401 in our implementation
-    expect(res.statusCode).toBe(401);
-  });
-
-  it('returns 401 when token decodes to unknown user', async () => {
-    const tokenUnknown = jwt.sign({ username: 'noone' }, 'your_jwt_secret');
-    const res = await request(app)
-      .get('/api/profile')
-      .set('Authorization', `Bearer ${tokenUnknown}`);
 
     expect(res.statusCode).toBe(401);
-    expect(res.body.message).toMatch(/no user found/i);
+    expect(res.body.message).toMatch(/invalid token/i);
   });
 
-  it('returns existing profile when present', async () => {
-    // precreate profile
-    profileModule.userProfiles['testuser'] = { name: 'Existing', skills: [] };
+  it('should return 401 if user not found', async () => {
+    UserCredentials.findOne.mockResolvedValueOnce(null);
 
     const res = await request(app)
       .get('/api/profile')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.name).toBe('Existing');
+    expect(res.statusCode).toBe(401);
+    expect(res.body.message).toMatch(/no user found/i);
   });
 
-  it('updates an already existing profile (put)', async () => {
-    profileModule.userProfiles['testuser'] = { name: 'Existing', city: 'Old' };
+  it('should handle internal server error gracefully', async () => {
+    UserProfile.findOne.mockImplementationOnce(() => { throw new Error('boom'); });
 
     const res = await request(app)
-      .put('/api/profile/edit')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ city: 'New' });
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${token}`);
 
-    expect(res.statusCode).toBe(200);
-    expect(profileModule.userProfiles['testuser'].city).toBe('New');
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toMatch(/internal server error/i);
   });
 
-  it('returns 401 for expired token', async () => {
-    // create token that is already expired
-    const expired = jwt.sign({ username: 'testuser' }, 'your_jwt_secret', { expiresIn: -10 });
+  it('should return 401 for expired token', async () => {
+    const expired = jwt.sign({ username: 'testuser' }, 'your_jwt_secret', { expiresIn: -1 });
     const res = await request(app)
       .get('/api/profile')
       .set('Authorization', `Bearer ${expired}`);
@@ -102,51 +144,84 @@ describe('Profile Routes - Full Coverage', () => {
     expect(res.body.message).toMatch(/invalid token/i);
   });
 
-  it('returns 500 for unexpected auth errors', async () => {
-    const verifySpy = jest.spyOn(require('jsonwebtoken'), 'verify')
-      .mockImplementation(() => { throw new Error('boom'); });
+  it('should handle internal server error in GET /profile', async () => {
+    const token = jwt.sign({ username: 'testuser' }, 'your_jwt_secret');
+
+    const { UserCredentials, UserProfile } = require('../models/User');
+    UserCredentials.findOne.mockResolvedValue({ _id: '123', username: 'testuser' });
+    
+    // Force an error inside findOne
+    UserProfile.findOne.mockRejectedValue(new Error('boom'));
 
     const res = await request(app)
       .get('/api/profile')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.statusCode).toBe(500);
-    expect(res.body.message).toMatch(/internal server error/i);
-
-    verifySpy.mockRestore();
+    expect(res.body.message).toBe('Internal server error');
   });
 
-  it('handles unexpected error in get route and returns 500', async () => {
-    // Define a getter for this username that throws when accessed to simulate an unexpected error in the handler
-    Object.defineProperty(profileModule.userProfiles, 'testuser', {
-      configurable: true,
-      get() { throw new Error('boom-get'); }
-    });
+  it('should handle validation errors in PUT /profile/edit', async () => {
+    const token = jwt.sign({ username: 'testuser' }, 'your_jwt_secret');
 
-    const res = await request(app)
-      .get('/api/profile')
-      .set('Authorization', `Bearer ${token}`);
+    const mockProfile = { 
+      save: jest.fn(() => {
+        const err = new Error('Invalid');
+        err.name = 'ValidationError';
+        err.errors = { city: { message: 'City is required' } };
+        throw err;
+      })
+    };
 
-    expect(res.statusCode).toBe(500);
-
-    // cleanup
-    delete profileModule.userProfiles.testuser;
-  });
-
-  it('handles unexpected error in put route and returns 500', async () => {
-    Object.defineProperty(profileModule.userProfiles, 'testuser', {
-      configurable: true,
-      get() { throw new Error('boom-put'); }
-    });
+    const { UserCredentials, UserProfile } = require('../models/User');
+    UserCredentials.findOne.mockResolvedValue({ _id: '123', username: 'testuser' });
+    UserProfile.findOne.mockResolvedValue(mockProfile);
 
     const res = await request(app)
       .put('/api/profile/edit')
       .set('Authorization', `Bearer ${token}`)
-      .send({ foo: 'bar' });
+      .send({ city: '' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toMatch(/Validation error/i);
+    expect(res.body.errors[0]).toMatch(/City is required/i);
+  });
+
+  it('should handle generic internal server error in PUT /profile/edit', async () => {
+    const token = jwt.sign({ username: 'testuser' }, 'your_jwt_secret');
+
+    const mockProfile = { 
+      save: jest.fn(() => { throw new Error('Unexpected failure'); })
+    };
+
+    const { UserCredentials, UserProfile } = require('../models/User');
+    UserCredentials.findOne.mockResolvedValue({ _id: '123', username: 'testuser' });
+    UserProfile.findOne.mockResolvedValue(mockProfile);
+
+    const res = await request(app)
+      .put('/api/profile/edit')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ city: 'Houston' });
 
     expect(res.statusCode).toBe(500);
-
-    // cleanup
-    delete profileModule.userProfiles.testuser;
+    expect(res.body.message).toBe('Internal server error');
   });
+
+  it('should handle unexpected errors inside auth middleware', async () => {
+    const token = jwt.sign({ username: 'testuser' }, 'your_jwt_secret');
+
+    // Mock jwt.verify to throw an unexpected error (e.g., runtime crash)
+    const verifySpy = jest.spyOn(require('jsonwebtoken'), 'verify')
+      .mockImplementation(() => { throw new Error('Auth middleware failure'); });
+
+    const res = await request(app)
+      .get('/api/profile')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toBe('Internal server error');
+
+    verifySpy.mockRestore();
+  });
+
 });

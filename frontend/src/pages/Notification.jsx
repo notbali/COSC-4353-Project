@@ -26,9 +26,20 @@ const Notification = ({ currentUser }) => {
         console.log("Current User ID:", currentUser); // check if userId is coming through correctly
 
         const response = await axios.get(
-          `http://localhost:4000/notifs/all?userId=${currentUser}`
+          `http://localhost:5001/notifs/all?userId=${currentUser}`
         );
-        setNotifications(response.data.reverse());
+        // Keep newest first; backend already sorts desc
+        const data = Array.isArray(response.data) ? response.data : [];
+        // Normalize to support either flattened or populated event fields
+        const normalized = data.map((n) => ({
+          ...n,
+          eventName: n.eventName ?? n.event?.eventName ?? null,
+          eventDate: n.eventDate ?? n.event?.eventDate ?? null,
+          location: n.location ?? n.event?.location ?? null,
+          eventDescription:
+            n.eventDescription ?? n.event?.eventDescription ?? null,
+        }));
+        setNotifications(normalized);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }

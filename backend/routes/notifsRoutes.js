@@ -158,16 +158,16 @@ router.post("/matched", async (req, res) => {
 router.get("/all", async (req, res) => {
   try {
     const { userId } = req.query;
-
+    console.log("Fetching notifications for userId:", userId);
     let query = {};
     if (userId) {
       query.user = userId;
     }
 
     const notifications = await Notifs.find(query)
-      .populate("event", "eventName eventDate")
+      .populate("event", "eventName eventDate location eventDescription")
       .sort({ createdAt: -1 });
-
+    console.log("Database returned:", notifications);
     res.status(200).json(notifications);
   } catch (error) {
     console.error("Error fetching notifications:", error);

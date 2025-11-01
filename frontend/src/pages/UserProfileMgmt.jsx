@@ -19,7 +19,6 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import ListItemText from '@mui/material/ListItemText';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 
 const UserProfileMgmt = ({userId}) => {
   const navigate = useNavigate();
@@ -400,23 +399,20 @@ const UserProfileMgmt = ({userId}) => {
                 </div>
                 <div style={{display: "flex", justifyContent: "center", marginBottom: "10px"}}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DemoContainer components={['DatePicker']}>
-                      <FormControl>
-                      <DatePicker
-                          label="Add Availability" 
-                          onChange={handleAvailabilityChange}
-                          slotProps={{
-                            textField: {
-                              id: "availability",
-                              name: "availability",
-                              variant: "outlined",
-                              size: "small",
-                            }
-                          }}
+                    <DatePicker
+                      label="Add Availability" 
+                      onChange={handleAvailabilityChange}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          id="availability"
+                          name="availability"
+                          variant="outlined"
+                          size="small"
+                          helperText="Please select your availability"
                         />
-                        <FormHelperText>Please select your availability</FormHelperText>
-                      </FormControl>
-                    </DemoContainer>
+                      )}
+                    />
                   </LocalizationProvider>
                 </div>
                 <div style={{marginBottom: "10px"}}>
