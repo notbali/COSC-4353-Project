@@ -3,6 +3,20 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const uniqueId = () => Math.random().toString(36).slice(2, 8);
+const uniqueUsername = (base = 'user') => {
+  const suffix = uniqueId();
+  const sanitized = base.replace(/[^a-zA-Z0-9._-]/g, '') || 'user';
+  const maxBaseLength = Math.max(1, 30 - suffix.length - 1);
+  const trimmedBase = sanitized.slice(0, maxBaseLength);
+  return `${trimmedBase}-${suffix}`;
+};
+const uniqueEmail = (base = 'user') => {
+  const suffix = uniqueId();
+  const sanitized = base.replace(/[^a-zA-Z0-9]/g, '') || 'user';
+  return `${sanitized.slice(0, 20)}${suffix}@example.com`;
+};
+
 // Import the actual server setup
 const app = require('../server');
 
@@ -15,13 +29,6 @@ beforeAll(async () => {
   });
 });
 
-// Clean up after each test
-afterEach(async () => {
-  const { UserCredentials, UserProfile } = require('../models/User');
-  await UserCredentials.deleteMany({});
-  await UserProfile.deleteMany({});
-});
-
 // Close connection after all tests
 afterAll(async () => {
   await mongoose.connection.close();
@@ -30,10 +37,13 @@ afterAll(async () => {
 describe('MongoDB Authentication System', () => {
   describe('User Registration', () => {
     test('should register user with valid credentials', async () => {
+      const suffix = uniqueId();
       const userData = {
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123'
+        username: uniqueUsername('testuser'),
+        email: uniqueEmail('testuser'),
+        password: 'password123',
+        firstName: `Test${suffix}`,
+        lastName: 'User'
       };
 
       const res = await request(app)
@@ -56,10 +66,13 @@ describe('MongoDB Authentication System', () => {
     });
 
     test('should return validation error for invalid email format', async () => {
+      const suffix = uniqueId();
       const userData = {
-        username: 'testuser',
+        username: uniqueUsername('testuser'),
         email: 'invalid-email',
-        password: 'password123'
+        password: 'password123',
+        firstName: `Test${suffix}`,
+        lastName: 'User'
       };
 
       const res = await request(app)
@@ -71,10 +84,13 @@ describe('MongoDB Authentication System', () => {
     });
 
     test('should return validation error for short username', async () => {
-      const userData = {
+      const suffix = uniqueId();
+      const userData = {  
         username: 'ab',
-        email: 'test@example.com',
-        password: 'password123'
+        email: uniqueEmail('shortname'),
+        password: 'password123',
+        firstName: `Test${suffix}`,
+        lastName: 'User'
       };
 
       const res = await request(app)
@@ -86,10 +102,13 @@ describe('MongoDB Authentication System', () => {
     });
 
     test('should return validation error for short password', async () => {
+      const suffix = uniqueId();
       const userData = {
-        username: 'testuser',
-        email: 'test@example.com',
-        password: '123'
+        username: uniqueUsername('testuser'),
+        email: uniqueEmail('shortpw'),
+        password: '123',
+        firstName: `Test${suffix}`,
+        lastName: 'User'
       };
 
       const res = await request(app)
@@ -101,10 +120,14 @@ describe('MongoDB Authentication System', () => {
     });
 
     test('should not allow duplicate usernames', async () => {
+      const suffix = uniqueId();
+      const baseUsername = uniqueUsername('duplicateuser');
       const userData = {
-        username: 'duplicateuser',
-        email: 'test@example.com',
-        password: 'password123'
+        username: baseUsername,
+        email: uniqueEmail('duplicateuser'),
+        password: 'password123',
+        firstName: `Test${suffix}`,
+        lastName: 'User'
       };
 
       // First registration
@@ -117,7 +140,7 @@ describe('MongoDB Authentication System', () => {
         .post('/api/register')
         .send({
           ...userData,
-          email: 'different@example.com'
+          email: uniqueEmail('duplicateuser-alt')
         });
 
       expect(res.status).toBe(400);
@@ -125,10 +148,14 @@ describe('MongoDB Authentication System', () => {
     });
 
     test('should not allow duplicate emails', async () => {
+      const suffix = uniqueId();
+      const baseEmail = uniqueEmail('duplicate');
       const userData = {
-        username: 'testuser',
-        email: 'duplicate@example.com',
-        password: 'password123'
+        username: uniqueUsername('testuser'),
+        email: baseEmail,
+        password: 'password123',
+        firstName: `Test${suffix}`,
+        lastName: 'User'
       };
 
       // First registration
@@ -141,7 +168,7 @@ describe('MongoDB Authentication System', () => {
         .post('/api/register')
         .send({
           ...userData,
-          username: 'differentuser'
+          username: uniqueUsername('differentuser')
         });
 
       expect(res.status).toBe(400);
@@ -150,37 +177,42 @@ describe('MongoDB Authentication System', () => {
   });
 
   describe('User Login', () => {
-    beforeEach(async () => {
-      // Create a test user
+    const loginUsername = uniqueUsername('logintest');
+    const loginEmail = uniqueEmail('logintest');
+
+    beforeAll(async () => {
       const { UserCredentials, UserProfile } = require('../models/User');
       const hashedPassword = await bcrypt.hash('password123', 10);
-      
-      const userCredentials = new UserCredentials({
-        username: 'logintest',
-        email: 'logintest@example.com',
-        password: hashedPassword
-      });
-      await userCredentials.save();
 
-      const userProfile = new UserProfile({
-        userId: userCredentials._id,
-        fullName: 'Login Test User',
-        address: '123 Test St',
-        city: 'Test City',
-        state: 'TS',
-        zipcode: '12345',
-        skills: ['Communication'],
-        preferences: 'Test preferences',
-        availability: ['2025-01-15']
-      });
-      await userProfile.save();
+      let userCredentials = await UserCredentials.findOne({ username: loginUsername });
+      if (!userCredentials) {
+        userCredentials = new UserCredentials({
+          username: loginUsername,
+          email: loginEmail,
+          password: hashedPassword
+        });
+        await userCredentials.save();
+
+        const userProfile = new UserProfile({
+          userId: userCredentials._id,
+          fullName: 'Login Test User',
+          address: '123 Test St',
+          city: 'Test City',
+          state: 'TS',
+          zipcode: '12345',
+          skills: ['Communication'],
+          preferences: 'Test preferences',
+          availability: ['2025-01-15']
+        });
+        await userProfile.save();
+      }
     });
 
     test('should login with valid credentials', async () => {
       const res = await request(app)
         .post('/api/login')
         .send({
-          username: 'logintest',
+          username: loginUsername,
           password: 'password123'
         });
 
@@ -205,7 +237,7 @@ describe('MongoDB Authentication System', () => {
       const res = await request(app)
         .post('/api/login')
         .send({
-          username: 'logintest',
+          username: loginUsername,
           password: 'wrongpassword'
         });
 
@@ -217,37 +249,60 @@ describe('MongoDB Authentication System', () => {
   describe('Profile Management', () => {
     let authToken;
     let userId;
+    const profileUsername = uniqueUsername('profiletest');
+    const profileEmail = uniqueEmail('profiletest');
 
-    beforeEach(async () => {
-      // Create a test user and get auth token
+    beforeAll(async () => {
       const { UserCredentials, UserProfile } = require('../models/User');
       const hashedPassword = await bcrypt.hash('password123', 10);
-      
-      const userCredentials = new UserCredentials({
-        username: 'profiletest',
-        email: 'profiletest@example.com',
-        password: hashedPassword
-      });
-      await userCredentials.save();
+
+      let userCredentials = await UserCredentials.findOne({ username: profileUsername });
+      if (!userCredentials) {
+        userCredentials = new UserCredentials({
+          username: profileUsername,
+          email: profileEmail,
+          password: hashedPassword
+        });
+        await userCredentials.save();
+      }
+
       userId = userCredentials._id;
 
-      const userProfile = new UserProfile({
-        userId: userCredentials._id,
-        fullName: 'Profile Test User',
-        address: '123 Test St',
-        city: 'Test City',
-        state: 'TS',
-        zipcode: '12345',
-        skills: ['Communication'],
-        preferences: 'Test preferences',
-        availability: ['2025-01-15']
-      });
-      await userProfile.save();
+      const existingProfile = await UserProfile.findOne({ userId });
+      if (!existingProfile) {
+        await UserProfile.create({
+          userId,
+          fullName: 'Profile Test User',
+          address: '123 Test St',
+          city: 'Test City',
+          state: 'TS',
+          zipcode: '12345',
+          skills: ['Communication'],
+          preferences: 'Test preferences',
+          availability: ['2025-01-15']
+        });
+      }
 
-      // Generate auth token
       authToken = jwt.sign(
-        { username: 'profiletest', userId: userId }, 
+        { username: profileUsername, userId },
         process.env.JWT_SECRET || 'your_jwt_secret'
+      );
+    });
+
+    beforeEach(async () => {
+      const { UserProfile } = require('../models/User');
+      await UserProfile.updateOne(
+        { userId },
+        {
+          fullName: 'Profile Test User',
+          address: '123 Test St',
+          city: 'Test City',
+          state: 'TS',
+          zipcode: '12345',
+          skills: ['Communication'],
+          preferences: 'Test preferences',
+          availability: ['2025-01-15']
+        }
       );
     });
 
@@ -314,9 +369,11 @@ describe('MongoDB Authentication System', () => {
     test('should persist user data across requests', async () => {
       // Register a user
       const userData = {
-        username: 'persisttest',
-        email: 'persisttest@example.com',
-        password: 'password123'
+        username: uniqueUsername('persisttest'),
+        email: uniqueEmail('persisttest'),
+        password: 'password123',
+        firstName: 'Persist',
+        lastName: 'User'
       };
 
       const registerRes = await request(app)
@@ -330,7 +387,7 @@ describe('MongoDB Authentication System', () => {
       const loginRes = await request(app)
         .post('/api/login')
         .send({
-          username: 'persisttest',
+          username: userData.username,
           password: 'password123'
         });
 
