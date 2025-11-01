@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.9% </span>
+                <span class="strong">52.38% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/21</span>
+                <span class='fraction'>11/21</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/4</span>
+                <span class='fraction'>4/4</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">75% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">50% </span>
-                <span class="quiet">Functions</span>
-                <span class='fraction'>2/4</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">65% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/20</span>
+                <span class='fraction'>10/20</span>
             </div>
         
             
@@ -211,29 +211,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -269,18 +269,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -328,7 +328,7 @@ const eventDetailsSchema = new mongoose.Schema(
       required: [true, 'At least one skill is required'],
       validate: {
         validator: function(skills) {
-          return skills.length &gt; 0 &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >skills.every(<span class="fstat-no" title="function not covered" >sk</span>ill =&gt; <span class="cstat-no" title="statement not covered" >skill.trim().length &gt; 0)</span>;</span>
+          return skills.length &gt; 0 &amp;&amp; skills.every(skill =&gt; skill.trim().length &gt; 0);
         },
         message: 'At least one skill is required and skills cannot be empty'
       }
@@ -345,12 +345,12 @@ const eventDetailsSchema = new mongoose.Schema(
       type: Date, 
       required: [true, 'Event date is required'],
       validate: {
-        validator: <span class="fstat-no" title="function not covered" >fu</span>nction(date) {
+        validator: function(date) {
           // New events must be in the future
-<span class="cstat-no" title="statement not covered" >          if (this.isNew) {</span>
-<span class="cstat-no" title="statement not covered" >            return date &gt; new Date();</span>
+          if (this.isNew) {
+            return date &gt; new Date();
           }
-<span class="cstat-no" title="statement not covered" >          return true;</span>
+          return true;
         },
         message: 'Event date must be in the future for new events'
       }
@@ -385,19 +385,19 @@ const eventDetailsSchema = new mongoose.Schema(
 eventDetailsSchema.pre(
   "deleteOne",
   { document: true, query: false },
-  async function (next) {
-    try {
-      const eventId = this._id;
+<span class="fstat-no" title="function not covered" >  as</span>ync function (next) {
+<span class="cstat-no" title="statement not covered" >    try {</span>
+      const eventId = <span class="cstat-no" title="statement not covered" >this._id;</span>
       
       // Delete all notifications associated with this event
-      const deletedNotifs = await Notifs.deleteMany({ event: eventId });
-      console.log(
+      const deletedNotifs = <span class="cstat-no" title="statement not covered" >await Notifs.deleteMany({ event: eventId });</span>
+<span class="cstat-no" title="statement not covered" >      console.log(</span>
         `Deleted ${deletedNotifs.deletedCount} notifications for event ${eventId}`
       );
 &nbsp;
       // Delete all volunteer history records for this event
-      const VolunteerHistory = require('./VolunteerHistory');
-      const deletedHistory = await VolunteerHistory.deleteMany({ eventId });
+      const VolunteerHistory = <span class="cstat-no" title="statement not covered" >require('./VolunteerHistory');</span>
+      const deletedHistory = <span class="cstat-no" title="statement not covered" >await VolunteerHistory.deleteMany({ eventId });</span>
 <span class="cstat-no" title="statement not covered" >      console.log(</span>
         `Deleted ${deletedHistory.deletedCount} volunteer history records for event ${eventId}`
       );
@@ -421,7 +421,7 @@ module.exports = EventDetails;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-01T02:39:09.777Z
+                at 2025-11-01T03:29:16.763Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
