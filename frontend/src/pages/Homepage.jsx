@@ -84,6 +84,11 @@ const Homepage = ({ userRole, isLoggedIn }) => {
   };
 
   const handleCardClick = (path) => {
+    // If not logged in and the user clicks Notifications, redirect to login
+    if (!isLoggedIn && path === "/notification") {
+      navigate("/login");
+      return;
+    }
     navigate(path);
   };
 
@@ -130,7 +135,7 @@ const Homepage = ({ userRole, isLoggedIn }) => {
     ],
   };
 
-  // Get features based on passed userRole
+  // Get features based on passed userRole;
   const features = featureCards[userRole] || featureCards["user"]; // Default to 'user' if role is undefined
 
   return (
