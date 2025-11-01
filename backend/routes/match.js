@@ -1,55 +1,96 @@
 const express = require('express');
 const router = express.Router();
-const Volunteer = require('../models/Volunteer');
-const Event = require('../models/Event');
+const EventDetails = require('../models/Event');
+const { UserProfile } = require('../models/User');
+const VolunteerHistory = require('../models/VolunteerHistory');
 
 // Get matching events for a volunteer 
 router.get('/match/:volunteerId', async (req, res) => {
-    const { volunteerId } = req.params;
+    try {
+        const { volunteerId } = req.params;
 
-    const idNum = Number(volunteerId);
-    const volunteer = Volunteer._inMemory.find((v) => v.id === idNum) || Volunteer._inMemory.find((v) => String(v._id) === String(volunteerId));
+        // Get user profile instead of volunteer record
+        const userProfile = await UserProfile.findOne({ userId: volunteerId });
+        if (!userProfile) return res.status(404).json({ message: 'User profile not found' });
 
-    if (!volunteer) return res.status(404).json({ message: 'Volunteer not found' });
+        const events = await EventDetails.find({ status: 'Open' });
+     
+        const matching = events.filter((ev) => {
+            if (!ev.requiredSkills || ev.requiredSkills.length === 0) return false;
+            
+            // Check skill match
+            const skillMatch = userProfile.skills && userProfile.skills.some(skill => 
+                ev.requiredSkills.includes(skill)
+            );
+            if (!skillMatch) return false;
+            
+            // Check availability
+            if (userProfile.availability.length === 0) return true;
+            const currentDate = new Date().toISOString().split('T')[0];
+            if (ev.eventDateISO < currentDate) return false;
+            return userProfile.availability.includes(ev.eventDateISO);
+        });
 
-    const events = Event._inMemory;
- 
-  const matching = events.filter((ev) => {
-    if (!ev.requiredSkills) return false;
-    const skillMatch = volunteer.skills && volunteer.skills.includes(ev.requiredSkills);
-        if (!skillMatch) return false;
-        if (volunteer.availability.length === 0) return true;
-        currentDate = new Date().toISOString().split('T')[0];
-        if (ev.eventDateISO < currentDate) return false;
-        return volunteer.availability.includes(ev.eventDateISO);
-  });
+        // Check volunteer history for each matching event
+        const eventsWithMatchStatus = await Promise.all(
+            matching.map(async (event) => {
+                const historyRecord = await VolunteerHistory.findOne({
+                    userId: volunteerId,
+                    eventId: event._id
+                });
+                
+                return {
+                    ...event.toObject(),
+                    matchedVolunteer: historyRecord ? volunteerId : null,
+                    matchedVolunteerName: historyRecord ? historyRecord.volunteerName : null,
+                    matchedAt: historyRecord ? historyRecord.createdAt : null
+                };
+            })
+        );
 
-  return res.status(200).json(matching);
+        return res.status(200).json(eventsWithMatchStatus);
+    } catch (error) {
+        res.status(500).json({ message: 'Error finding matching events', error });
+    }
 });
 
 // Match Volunteer to Event
-const matches = [];
-router.post('/match', (req, res) => {
-  const { volunteerId, eventId } = req.body;
-  if (!volunteerId || !eventId) return res.status(400).json({ message: 'volunteerId and eventId required' });
+router.post('/match', async (req, res) => {
+  try {
+    const { volunteerId, eventId } = req.body;
+    if (!volunteerId || !eventId) return res.status(400).json({ message: 'volunteerId and eventId required' });
 
-  const idNum = Number(volunteerId);
-  const volunteer = Volunteer._inMemory && (Volunteer._inMemory.find((v) => v.id === idNum) || Volunteer._inMemory.find((v) => String(v._id) === String(volunteerId)));
-  if (!volunteer) return res.status(404).json({ message: 'Volunteer not found' });
+    const userProfile = await UserProfile.findOne({ userId: volunteerId });
+    if (!userProfile) return res.status(404).json({ message: 'User profile not found' });
 
-  const idEvent = Number(eventId);
-  const event = Event._inMemory && Event._inMemory.find((e) => Number(e.id) === idEvent);
-  if (!event) return res.status(404).json({ message: 'Event not found' });
+    const event = await EventDetails.findById(eventId);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
 
-  // set matched info on the in-memory event
-  event.matchedVolunteer = volunteer.id || volunteer;
-  event.matchedVolunteerName = volunteer.name || null;
-  event.matchedAt = new Date().toISOString();
+    if (event.status !== 'Open') {
+      return res.status(400).json({ message: 'Event is not open for registration' });
+    }
 
-  const match = { id: matches.length + 1, volunteerId, eventId, createdAt: new Date() };
-  matches.push(match);
+    if (event.currentVolunteers >= event.maxVolunteers) {
+      return res.status(400).json({ message: 'Event is full' });
+    }
 
-  return res.status(201).json({ match, event });
+    const existingHistory = await VolunteerHistory.findOne({
+      userId: volunteerId,
+      eventId: eventId
+    });
+    if (existingHistory) {
+      return res.status(400).json({ message: 'Volunteer already matched to this event' });
+    }
+
+    event.currentVolunteers = (event.currentVolunteers || 0) + 1;
+    await event.save();
+
+    const match = { volunteerId, eventId, createdAt: new Date() };
+
+    return res.status(201).json({ match, event });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating match', error });
+  }
 });
 
 module.exports = router;

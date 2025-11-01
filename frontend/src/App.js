@@ -123,7 +123,7 @@ function App() {
               path="/event-management"
               element={
                 isLoggedIn ? (
-                  <EventList />
+                  <EventManagementForm />
                 ) : (
                   <EventManagementForm handleLoginState={handleLoginState} /> // changed from Login to EventManagementForm for testing
                 )
@@ -133,9 +133,9 @@ function App() {
               path="/event-list"
               element={
                 isLoggedIn ? (
-                  <Events />
+                  <EventList />
                 ) : (
-                  <Events handleLoginState={handleLoginState} />
+                  <EventList handleLoginState={handleLoginState} />
                 )
               }
             />
