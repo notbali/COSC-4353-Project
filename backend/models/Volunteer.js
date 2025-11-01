@@ -1,40 +1,54 @@
 const mongoose = require('mongoose');
 
+// This model is kept for backward compatibility but the main user data is now in UserCredentials and UserProfile
 const volunteerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  address1: String,
-  address2: String,
-  city: String,
-  state: String,
-  zipCode: String,
-  skills: [String],
-  availability: String,
+  name: { 
+    type: String, 
+    required: [true, 'Name is required'],
+    trim: true,
+    maxlength: [100, 'Name cannot exceed 100 characters']
+  },
+  address1: { 
+    type: String,
+    trim: true,
+    maxlength: [200, 'Address cannot exceed 200 characters']
+  },
+  address2: { 
+    type: String,
+    trim: true,
+    maxlength: [200, 'Address line 2 cannot exceed 200 characters']
+  },
+  city: { 
+    type: String,
+    trim: true,
+    maxlength: [50, 'City name cannot exceed 50 characters']
+  },
+  state: { 
+    type: String,
+    trim: true,
+    maxlength: [2, 'State must be a 2-character code']
+  },
+  zipCode: { 
+    type: String,
+    trim: true,
+    match: [/^\d{5}(-\d{4})?$/, 'Please enter a valid zipcode']
+  },
+  skills: { 
+    type: [String],
+    validate: {
+      validator: function(skills) {
+        return skills.every(skill => skill.trim().length > 0);
+      },
+      message: 'Skills cannot be empty strings'
+    }
+  },
+  availability: { 
+    type: String,
+    trim: true
+  },
   events: [Object]
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('Volunteer', volunteerSchema);
-
-module.exports._inMemory = [
-  {
-    id: 1,
-    name: 'John Doe',
-    address1: '1530 Pembledon Drive',
-    address2: 'n/a',
-    city: 'Metropolis',
-    state: 'DC',
-    zipCode: '77777',
-    skills: ['Child Care','Food Preparation & Serving'],
-    availability: ['2025-12-25','2025-12-26']
-  },
-  {
-    id: 2,
-    name: 'Jane Doe',
-    address1: '1530 Pembledon Drive',
-    address2: 'n/a',
-    city: 'Metropolis',
-    state: 'DC',
-    zipCode: '77777',
-    skills: ['Transportation'],
-    availability: ['2025-12-24']
-  }
-];

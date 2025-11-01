@@ -1,16 +1,77 @@
 const mongoose = require("mongoose");
-//const Match = require("./Match");
 const Notifs = require("./Notifs");
 
-const eventSchema = new mongoose.Schema(
+// EventDetails Schema - stores event information
+const eventDetailsSchema = new mongoose.Schema(
   {
-    eventName: { type: String, required: true },
-    eventDescription: { type: String, required: true },
-    location: { type: String, required: true },
-    requiredSkills: [{ type: String, required: true }],
-    urgency: { type: String, required: true },
-    eventDate: { type: Date, required: false },
-    eventDateISO: String,
+    eventName: { 
+      type: String, 
+      required: [true, 'Event name is required'],
+      trim: true,
+      minlength: [3, 'Event name must be at least 3 characters long'],
+      maxlength: [100, 'Event name cannot exceed 100 characters']
+    },
+    eventDescription: { 
+      type: String, 
+      required: [true, 'Event description is required'],
+      trim: true,
+      minlength: [10, 'Event description must be at least 10 characters long'],
+      maxlength: [1000, 'Event description cannot exceed 1000 characters']
+    },
+    location: { 
+      type: String, 
+      required: [true, 'Location is required'],
+      trim: true,
+      maxlength: [200, 'Location cannot exceed 200 characters']
+    },
+    requiredSkills: { 
+      type: [String], 
+      required: [true, 'At least one skill is required'],
+      validate: {
+        validator: function(skills) {
+          return skills.length > 0 && skills.every(skill => skill.trim().length > 0);
+        },
+        message: 'At least one skill is required and skills cannot be empty'
+      }
+    },
+    urgency: { 
+      type: String, 
+      required: [true, 'Urgency level is required'],
+      enum: {
+        values: ['Low', 'Medium', 'High', 'Urgent'],
+        message: 'Urgency must be one of: Low, Medium, High, Urgent'
+      }
+    },
+    eventDate: { 
+      type: Date, 
+      required: [true, 'Event date is required'],
+      validate: {
+        validator: function(date) {
+          return date > new Date();
+        },
+        message: 'Event date must be in the future'
+      }
+    },
+    eventDateISO: {
+      type: String,
+      required: true,
+      match: [/^\d{4}-\d{2}-\d{2}$/, 'Event date must be in YYYY-MM-DD format']
+    },
+    status: {
+      type: String,
+      enum: ['Open', 'Closed', 'Cancelled'],
+      default: 'Open'
+    },
+    maxVolunteers: {
+      type: Number,
+      min: [1, 'Maximum volunteers must be at least 1'],
+      default: 10
+    },
+    currentVolunteers: {
+      type: Number,
+      default: 0,
+      min: [0, 'Current volunteers cannot be negative']
+    }
   },
   {
     timestamps: true,
@@ -18,23 +79,24 @@ const eventSchema = new mongoose.Schema(
 );
 
 // Middleware to delete related data when an event is deleted
-eventSchema.pre(
+eventDetailsSchema.pre(
   "deleteOne",
   { document: true, query: false },
   async function (next) {
     try {
       const eventId = this._id;
-      /*
-      // Delete all matches associated with this event
-      const deletedMatches = await Match.deleteMany({ eventId });
-      console.log(
-        `Deleted ${deletedMatches.deletedCount} matches for event ${eventId}`
-      );
-      */
+      
       // Delete all notifications associated with this event
       const deletedNotifs = await Notifs.deleteMany({ event: eventId });
       console.log(
         `Deleted ${deletedNotifs.deletedCount} notifications for event ${eventId}`
+      );
+
+      // Delete all volunteer history records for this event
+      const VolunteerHistory = require('./VolunteerHistory');
+      const deletedHistory = await VolunteerHistory.deleteMany({ eventId });
+      console.log(
+        `Deleted ${deletedHistory.deletedCount} volunteer history records for event ${eventId}`
       );
 
       next();
@@ -45,106 +107,7 @@ eventSchema.pre(
   }
 );
 
-module.exports = mongoose.model("Event", eventSchema);
+// Create the model
+const EventDetails = mongoose.model("EventDetails", eventDetailsSchema);
 
-module.exports._inMemory = [
-  {
-    id: 1,
-    eventName: 'Grocery Delivery',
-    eventDescription: 'Deliver groceries to elderly',
-    location: 'Metropolis',
-    requiredSkills: 'Transportation',
-    urgency: 'Medium',
-    eventDateISO: '2025-12-24'
-  },
-  {
-    id: 2,
-    eventName: 'Babysitting',
-    eventDescription: 'Watching baby',
-    location: 'Metropolis',
-    requiredSkills: 'Child Care',
-    urgency: 'Medium',
-    eventDateISO: '2025-12-25'
-  },
-  {
-    id: 3,
-    eventName: 'Cooking',
-    eventDescription: 'Cook meals for homeless',
-    location: 'Metropolis',
-    requiredSkills: 'Food Preparation & Serving',
-    urgency: 'Urgent',
-    eventDateISO: '2025-12-26'
-  },
-    {
-    id: 4,
-    eventName: 'Cooking2',
-    eventDescription: 'Cook meals for more homeless',
-    location: 'Metropolis',
-    requiredSkills: 'Food Preparation & Serving',
-    urgency: 'Urgent',
-    eventDateISO: '2025-12-27'
-  },
-  {
-    id: 5,
-    eventName: 'Grocery Delivery',
-    eventDescription: 'Deliver groceries to elderly',
-    location: 'Metropolis',
-    requiredSkills: 'Transportation',
-    urgency: 'Medium',
-    eventDateISO: '2025-08-24'
-  },
-  {
-    id: 6,
-    eventName: 'Babysitting',
-    eventDescription: 'Watching baby',
-    location: 'Metropolis',
-    requiredSkills: 'Child Care',
-    urgency: 'Medium',
-    eventDateISO: '2025-08-25'
-  },
-  {
-    id: 7,
-    eventName: 'Cooking',
-    eventDescription: 'Cook meals for homeless',
-    location: 'Metropolis',
-    requiredSkills: 'Food Preparation & Serving',
-    urgency: 'Urgent',
-    eventDateISO: '2025-08-26',
-    matchedVolunteer: { id: 1, name: 'John Doe' },
-    matchedVolunteerName: 'John Doe',
-  },
-  {
-    id: 8,
-    eventName: 'Grocery Delivery',
-    eventDescription: 'Deliver groceries to elderly',
-    location: 'Metropolis',
-    requiredSkills: 'Transportation',
-    urgency: 'Medium',
-    eventDateISO: '2025-05-24',
-    matchedVolunteer: { id: 2, name: 'Jane Doe' },
-    matchedVolunteerName: 'Jane Doe',
-  },
-  {
-    id: 9,
-    eventName: 'Babysitting',
-    eventDescription: 'Watching baby',
-    location: 'Metropolis',
-    requiredSkills: 'Child Care',
-    urgency: 'Medium',
-    eventDateISO: '2025-05-25'
-  },
-  {
-    id: 10,
-    eventName: 'Cooking',
-    eventDescription: 'Cook meals for homeless',
-    location: 'Metropolis',
-    requiredSkills: 'Food Preparation & Serving',
-    urgency: 'Urgent',
-    eventDateISO: '2025-05-26',
-    matchedVolunteer: { id: 1, name: 'John Doe' },
-    matchedVolunteerName: 'John Doe',
-  },
-];
-
-
-//module.exports = Event;
+module.exports = EventDetails;
