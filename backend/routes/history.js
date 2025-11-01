@@ -55,12 +55,21 @@ router.get('/events', async (req, res) => {
 		const eventsWithVolunteers = await Promise.all(
 			events.map(async (event) => {
 				const volunteerHistories = await VolunteerHistory.find({ eventId: event._id });
-				const assignedVolunteers = volunteerHistories.map(history => ({
-					volunteerId: history.userId,
-					volunteerName: history.volunteerName,
-					status: history.status,
-					assignedAt: history.createdAt
-				}));
+				
+				// Get full names for each volunteer
+				const assignedVolunteers = await Promise.all(
+					volunteerHistories.map(async (history) => {
+						// Get the user profile to fetch full name
+						const userProfile = await User.UserProfile.findOne({ userId: history.userId });
+						
+						return {
+							volunteerId: history.userId,
+							volunteerName: userProfile ? userProfile.fullName : history.volunteerName,
+							status: history.status,
+							assignedAt: history.createdAt
+						};
+					})
+				);
 				
 				return {
 					...event.toObject(),
@@ -99,12 +108,16 @@ router.post('/volunteer-history', async (req, res) => {
 			return res.status(404).json({ message: 'Event not found' });
 		}
 		
+		// Get user's full name from profile
+		const userProfile = await User.UserProfile.findOne({ userId });
+		const fullName = userProfile ? userProfile.fullName : volunteerName; // Fallback to provided name
+		
 		// Create history record
 		const historyRecord = new VolunteerHistory({
 			userId,
 			eventId,
 			eventName: event.eventName,
-			volunteerName,
+			volunteerName: fullName,
 			status: 'Registered'
 		});
 		
