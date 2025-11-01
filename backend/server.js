@@ -16,13 +16,29 @@ app.listen(5001, () => console.log('Server running on port 5001'));
 
 const volunteerRoutes = require('./routes/history');
 const matchRoutes = require('./routes/match');
+const profileRoutes = require('./routes/profile');
 app.use('/api', volunteerRoutes);
 app.use('/api', matchRoutes);
+app.use('/api', profileRoutes);
 
 // Registration route
 app.post('/api/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, fullName, address1, city, state, zip } = req.body;
+
+    // Validation for required fields
+    const missing = [];
+    if (!username) missing.push('username');
+    if (!email) missing.push('email');
+    if (!password) missing.push('password');
+    if (!fullName) missing.push('fullName');
+    if (!address1) missing.push('address1');
+    if (!city) missing.push('city');
+    if (!state) missing.push('state');
+    if (!zip) missing.push('zip');
+    if (missing.length) {
+      return res.status(400).json({ message: `Missing required fields: ${missing.join(', ')}` });
+    }
     
     // Check if user exists
     const existingUser = await UserCredentials.findOne({ 
@@ -45,14 +61,15 @@ app.post('/api/register', async (req, res) => {
     
     await userCredentials.save();
     
-    // Create user profile with default values
+    // Create user profile using provided values
     const userProfile = new UserProfile({
       userId: userCredentials._id,
-      fullName: '',
-      address: '',
-      city: '',
-      state: '',
-      zipcode: '',
+      fullName,
+      address1,
+      address2: '',
+      city,
+      state,
+      zip,
       skills: [],
       preferences: '',
       availability: []
@@ -97,107 +114,6 @@ app.post('/api/login', async (req, res) => {
     console.log("Received login data:", req.body);
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-
-// Profile route
-app.get('/api/profile', async (req, res) => {
-  try {
-    // Grab authentication header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: 'no token found' });
-    
-    // Grab token and decode
-    const token = authHeader.split(' ')[1];
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-    } catch (err) {
-      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-        return res.status(401).json({ message: 'invalid token' });
-      }
-      console.error('Profile fetch error:', err);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
-   
-    // Find user credentials
-    const userCredentials = await UserCredentials.findOne({ username: decoded.username });
-    if (!userCredentials) return res.status(401).json({ message: 'no user found' });
-
-    // Find user profile
-    const userProfile = await UserProfile.findOne({ userId: userCredentials._id });
-    if (!userProfile) {
-      // Create default profile if it doesn't exist
-      const newProfile = new UserProfile({
-        userId: userCredentials._id,
-        fullName: '',
-        address: '',
-        city: '',
-        state: '',
-        zipcode: '',
-        skills: [],
-        preferences: '',
-        availability: []
-      });
-      await newProfile.save();
-      return res.json(newProfile);
-    }
-
-    // Return profile
-    res.json(userProfile);
-    console.log("Received profile request for: ", userCredentials.username);
-  } catch (err) {
-    console.error("Profile fetch error:", err);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// Edit profile route
-app.put('/api/profile/edit', async (req, res) => {
-  try {
-    // Grab authentication header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: 'no token found' });
-    
-    // Grab token and decode
-    const token = authHeader.split(' ')[1];
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-    } catch (err) {
-      if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-        return res.status(401).json({ message: 'invalid token' });
-      }
-      console.error('Profile update error:', err);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
-   
-    // Find user credentials
-    const userCredentials = await UserCredentials.findOne({ username: decoded.username });
-    if (!userCredentials) return res.status(401).json({ message: 'no user found' });
-
-    // Find and update user profile
-    const userProfile = await UserProfile.findOne({ userId: userCredentials._id });
-    if (!userProfile) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
-
-    // Update profile fields with validation
-    Object.assign(userProfile, req.body);
-    await userProfile.save();
-    
-    res.json({ message: 'Profile updated successfully!' });
-    console.log("Received edit profile data:", req.body);
-  } catch (err) {
-    console.error("Profile update error:", err);
-    if (err.name === 'ValidationError') {
-      return res.status(400).json({ 
-        message: 'Validation error', 
-        errors: Object.values(err.errors).map(error => error.message) 
-      });
-    }
     res.status(500).json({ message: 'Internal server error' });
   }
 });
