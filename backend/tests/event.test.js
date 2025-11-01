@@ -589,5 +589,69 @@ describe("Event Model", () => {
     });
   });
 
+  it("should trigger the actual pre('deleteOne') middleware and log deletions", async () => {
+    const Notifs = require("../models/Notifs");
+    const VolunteerHistory = require("../models/VolunteerHistory");
+
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 7);
+
+    const mockEvent = new Event({
+      eventName: "Middleware Event",
+      eventDescription: "Triggering actual pre deleteOne middleware",
+      location: "Middleware Test Location",
+      requiredSkills: ["SkillA", "SkillB"],
+      urgency: "High",
+      eventDate: futureDate,
+      eventDateISO: futureDate.toISOString().split("T")[0]
+    });
+
+    // Mocks: simulate successful deletions
+    Notifs.deleteMany.mockResolvedValue({ deletedCount: 4 });
+    VolunteerHistory.deleteMany.mockResolvedValue({ deletedCount: 1 });
+
+    // Run actual middleware by calling deleteOne() on the event document
+    await mockEvent.deleteOne();
+
+    // Verify that the real middleware ran
+    expect(Notifs.deleteMany).toHaveBeenCalledWith({ event: mockEvent._id });
+    expect(VolunteerHistory.deleteMany).toHaveBeenCalledWith({ eventId: mockEvent._id });
+
+    expect(console.log).toHaveBeenCalledWith(
+      `Deleted 4 notifications for event ${mockEvent._id}`
+    );
+    expect(console.log).toHaveBeenCalledWith(
+      `Deleted 1 volunteer history records for event ${mockEvent._id}`
+    );
+  });
+
+  it("should trigger the pre('deleteOne') middleware catch block on error", async () => {
+  const Notifs = require("../models/Notifs");
+  const VolunteerHistory = require("../models/VolunteerHistory");
+
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 7);
+
+  const mockEvent = new Event({
+    eventName: "Error Event",
+    eventDescription: "Testing middleware error path",
+    location: "Error Location",
+    requiredSkills: ["Skill1"],
+    urgency: "Medium",
+    eventDate: futureDate,
+    eventDateISO: futureDate.toISOString().split("T")[0]
+  });
+
+  const testError = new Error("Simulated deletion failure");
+  Notifs.deleteMany.mockRejectedValue(testError);
+  VolunteerHistory.deleteMany.mockResolvedValue({ deletedCount: 0 });
+
+  await mockEvent.deleteOne();
+
+  expect(console.error).toHaveBeenCalledWith(
+    "Error in event delete middleware:",
+    testError
+  );
+});
 
 });
