@@ -17,7 +17,6 @@ beforeAll(async () => {
 
 // Clean up after each test
 afterEach(async () => {
-  const { UserCredentials, UserProfile } = require('../models/User');
   await UserCredentials.deleteMany({});
   await UserProfile.deleteMany({});
 });
