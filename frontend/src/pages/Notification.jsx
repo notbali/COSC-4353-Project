@@ -31,8 +31,17 @@ const Notification = ({ currentUser }) => {
         const response = await axios.get(url);
         // Keep newest first; backend already sorts desc
         const data = Array.isArray(response.data) ? response.data : [];
+        // Filter visible notifications: either broadcast (no user) or for current user
+        const visible = data.filter((n) => {
+          if (!n.user) return true; // broadcast / global notification
+          try {
+            return String(n.user) === String(currentUser);
+          } catch (e) {
+            return false;
+          }
+        });
         // Normalize to support either flattened or populated event fields
-        const normalized = data.map((n) => ({
+        const normalized = visible.map((n) => ({
           ...n,
           eventName: n.eventName ?? n.event?.eventName ?? null,
           eventDate: n.eventDate ?? n.event?.eventDate ?? null,

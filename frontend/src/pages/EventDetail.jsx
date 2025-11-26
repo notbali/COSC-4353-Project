@@ -40,14 +40,15 @@ const StyledCard = styled(Card)({
   transition: "all 0.3s ease",
 });
 
-const StyledButton = styled(IconButton)({
+const StyledButton = styled(Button)({
   backgroundColor: "#184b69ff",
   color: "#ffffff",
-  borderRadius: "5px",
-  padding: "10px",
-  margin: "5px",
+  fontWeight: "bold",
+  padding: "10px 20px",
+  transition: "transform 0.2s ease",
   "&:hover": {
     backgroundColor: "#1f5777ff",
+    transform: "scale(1.03)",
   },
 });
 
@@ -88,7 +89,7 @@ const EventDetail = () => {
     // Fetch the event data
     const fetchEvent = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/events/${id}`);
+        const response = await axios.get(`http://localhost:5001/api/events/${id}`);
         setEventData(response.data);
         setLoading(false);
       } catch (error) {
@@ -122,21 +123,25 @@ const EventDetail = () => {
     if (validateForm()) {
       setIsSubmitting(true);
       try {
+        const token = localStorage.getItem("token");
         const response = await axios.put(
-          `http://localhost:4000/events/update/${id}`,
+          `http://localhost:5001/api/events/update/${id}`,
           eventData
         );
         console.log("Update response:", response.data);
 
         // Calling notification API endpoint
         try {
+          const userId = localStorage.getItem("userId");
           const notificationPayload = {
             eventId: id, // Use the ID directly, since you have it already
-            notifType: "updated event",
+            notifType: "event update",
+            userId: userId || null
           };
           const notifresponse = await axios.post(
-            "http://localhost:4000/notifs/create",
-            notificationPayload
+            "http://localhost:5001/api/notifs/create",
+            notificationPayload,
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
           );
           console.log("Notification response:", notifresponse.data);
         } catch (notifError) {
@@ -192,7 +197,7 @@ const EventDetail = () => {
       // Call notification API before the event is deleted
       try {
         const notifResponse = await axios.post(
-          "http://localhost:4000/notifs/delete",
+          "http://localhost:5001/api/notifs/delete",
           eventDetail
         );
         console.log("Notification response:", notifResponse.data);
@@ -200,7 +205,7 @@ const EventDetail = () => {
         console.error("Error creating notification:", notifError.message);
       }
 
-      await axios.delete(`http://localhost:4000/events/delete/${id}`);
+      await axios.delete(`http://localhost:5001/api/events/delete/${id}`);
       navigate("/event-management"); // Navigate back to the event list after deletion
     } catch (error) {
       console.error("Failed to delete event:", error);
@@ -250,7 +255,7 @@ const EventDetail = () => {
     <Container sx={{ mt: 5, mb: 5 }}>
       <StyledCard>
         <CardContent>
-          <BackButton onClick={() => navigate("/event-mgmt")}>
+          <BackButton onClick={() => navigate("/event-list")}>
             <ArrowBackIcon />
           </BackButton>
           <DeleteButton onClick={handleOpenDialog}>
@@ -261,7 +266,7 @@ const EventDetail = () => {
             component="h1"
             gutterBottom
             align="center"
-            sx={{ mb: 4, color: "#d58e31ff", fontWeight: "bold" }}
+            sx={{ mb: 4, color: "#184b69ff", fontWeight: "bold" }}
           >
             Update Event
           </Typography>

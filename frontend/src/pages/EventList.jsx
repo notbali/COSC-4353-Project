@@ -25,6 +25,7 @@ const EventList = () => {
   const [currentUserId, setCurrentUserId] = React.useState(null);
   const [currentUserName, setCurrentUserName] = React.useState('');
   const storedUserRole = localStorage.getItem('userRole') || '';
+  const navigate = useNavigate();
 
   // Fetch events function so it can be reused after updates
   const fetchEvents = async () => {
@@ -228,39 +229,55 @@ const EventList = () => {
                       )}
                       {storedUserRole === 'admin' && (
                         <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
-                          <button
-                            onClick={async () => {
-                              if (!window.confirm('Delete this event? This action cannot be undone.')) return;
-                              try {
-                                const token = localStorage.getItem('token');
-                                const res = await fetch(`http://localhost:5001/api/events/delete/${event._id}`, {
-                                  method: 'DELETE',
-                                  headers: token ? { Authorization: `Bearer ${token}` } : {},
-                                });
-                                if (res.ok) {
-                                  alert('Event deleted');
-                                  fetchEvents();
-                                } else {
-                                  const data = await res.json();
-                                  alert(data.message || 'Failed to delete event');
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              onClick={() => navigate(`/events/${event._id}`)}
+                              style={{
+                                backgroundColor: '#184b69ff',
+                                color: 'white',
+                                border: 'none',
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              Update Event
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!window.confirm('Delete this event? This action cannot be undone.')) return;
+                                try {
+                                  const token = localStorage.getItem('token');
+                                  const res = await fetch(`http://localhost:5001/api/events/delete/${event._id}`, {
+                                    method: 'DELETE',
+                                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                  });
+                                  if (res.ok) {
+                                    alert('Event deleted');
+                                    fetchEvents();
+                                  } else {
+                                    const data = await res.json();
+                                    alert(data.message || 'Failed to delete event');
+                                  }
+                                } catch (err) {
+                                  console.error('Error deleting event:', err);
+                                  alert('Network error while deleting event');
                                 }
-                              } catch (err) {
-                                console.error('Error deleting event:', err);
-                                alert('Network error while deleting event');
-                              }
-                            }}
-                            style={{
-                              backgroundColor: '#9c2a2a',
-                              color: 'white',
-                              border: 'none',
-                              padding: '6px 10px',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                            }}
-                          >
-                            Delete Event
-                          </button>
+                              }}
+                              style={{
+                                backgroundColor: '#9c2a2a',
+                                color: 'white',
+                                border: 'none',
+                                padding: '6px 10px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              Delete Event
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
