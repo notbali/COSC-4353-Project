@@ -128,13 +128,17 @@ router.post('/volunteer-history', async (req, res) => {
 		event.currentVolunteers = (event.currentVolunteers || 0) + 1;
 		await event.save();
 
-		// Create notification for the user about registration
+		// Create notification for the user about registration (include event details so it persists)
 		try {
 			await Notifs.create({
 				event: event._id,
 				user: userId,
 				title: 'You have registered for an event',
 				message: `You have been registered for the event: ${event.eventName}`,
+				eventName: event.eventName,
+				eventDescription: event.eventDescription,
+				location: event.location,
+				eventDate: event.eventDate,
 				createdAt: new Date()
 			});
 		} catch (notifErr) {
@@ -178,6 +182,10 @@ router.delete('/volunteer-history/:userId/:eventId', async (req, res) => {
 				user: userId,
 				title: 'You have been removed from an event',
 				message: `You have been removed from the event: ${event ? event.eventName : eventId}`,
+				eventName: event ? event.eventName : null,
+				eventDescription: event ? event.eventDescription : null,
+				location: event ? event.location : null,
+				eventDate: event ? event.eventDate : null,
 				createdAt: new Date()
 			});
 		} catch (notifErr) {

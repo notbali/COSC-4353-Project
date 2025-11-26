@@ -147,6 +147,10 @@ router.post("/matched", async (req, res) => {
         user: userId,
         title: "You Have Been Matched To An Event!",
         message: `You have been matched to the event: ${event.eventName}`,
+        eventName: event.eventName,
+        eventDescription: event.eventDescription,
+        location: event.location,
+        eventDate: event.eventDate,
         createdAt: new Date(),
       });
       notifications.push(notification);
@@ -195,8 +199,6 @@ router.get("/all", async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // POST /dismiss route - mark a notification dismissed for a user
 router.post('/dismiss', async (req, res) => {
   try {
@@ -205,10 +207,42 @@ router.post('/dismiss', async (req, res) => {
       return res.status(400).json({ message: 'notifId and userId are required' });
     }
 
-    await Notifs.findByIdAndUpdate(notifId, { $addToSet: { dismissedBy: userId } });
+    console.log('dismiss called with:', { notifId, userId });
+    const result = await Notifs.findByIdAndUpdate(notifId, { $addToSet: { dismissedBy: userId } });
+    console.log('dismiss result:', result);
     res.status(200).json({ message: 'Notification dismissed' });
   } catch (error) {
     console.error('Error dismissing notification:', error);
     res.status(500).json({ message: 'Error dismissing notification' });
   }
 });
+
+// POST /dismiss-all route - dismiss multiple (or all visible) notifications for a user
+router.post('/dismiss-all', async (req, res) => {
+  try {
+    const { userId, notifIds } = req.body;
+    if (!userId) return res.status(400).json({ message: 'userId is required' });
+    console.log('dismiss-all called with:', { userId, notifIds });
+
+    if (Array.isArray(notifIds) && notifIds.length > 0) {
+      // Dismiss specific notifications
+      const result = await Notifs.updateMany(
+        { _id: { $in: notifIds } },
+        { $addToSet: { dismissedBy: userId } }
+      );
+      console.log('dismiss-all updated specific notifications:', result);
+      return res.status(200).json({ message: 'Notifications dismissed', modifiedCount: result.modifiedCount ?? result.nModified ?? 0 });
+    }
+
+    // Otherwise dismiss all notifications visible to the user (global + user-specific)
+    const query = { $or: [{ user: userId }, { user: { $exists: false } }, { user: null }] };
+    const result = await Notifs.updateMany(query, { $addToSet: { dismissedBy: userId } });
+    console.log('dismiss-all updated all visible notifications:', result);
+    res.status(200).json({ message: 'All notifications dismissed', modifiedCount: result.modifiedCount ?? result.nModified ?? 0 });
+  } catch (error) {
+    console.error('Error dismissing all notifications:', error);
+    res.status(500).json({ message: 'Error dismissing notifications' });
+  }
+});
+
+module.exports = router;

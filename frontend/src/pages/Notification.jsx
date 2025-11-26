@@ -88,6 +88,30 @@ const Notification = ({ currentUser }) => {
     }
   };
 
+  // function to dismiss all visible notifications for current user
+  const dismissAllNotifications = async () => {
+    try {
+      if (!currentUser) return;
+      const notifIds = notifications.map((n) => n._id ?? n.id).filter(Boolean);
+      const response = await axios.post(`${API_BASE_URL}/notifs/dismiss-all`, { userId: currentUser, notifIds });
+      const modified = response?.data?.modifiedCount ?? response?.data?.modified ?? null;
+      if (modified === null) {
+        // server didn't return counts but succeeded; clear local list
+        setNotifications([]);
+      } else if (modified > 0) {
+        // server modified some documents; clear local list
+        setNotifications([]);
+      } else {
+        console.warn('dismiss-all completed but no documents were modified', { notifIds, response: response.data });
+      }
+    } catch (err) {
+      console.error('Error dismissing all notifications:', err);
+      // fallback: clear UI so user isn't blocked by transient errors
+      // keep notifications in UI to avoid losing them silently; user can retry
+      // setNotifications([]);
+    }
+  };
+
   const [checked] = useState(true);
 
   // function to format date and add a day
@@ -116,7 +140,8 @@ const Notification = ({ currentUser }) => {
               borderRadius: "15px",
             }}
           >
-            <Typography
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography
               variant="h4"
               sx={{
                 marginTop: "8px",
@@ -128,6 +153,14 @@ const Notification = ({ currentUser }) => {
             >
               Notifications
             </Typography>
+              <Button
+                variant="outlined"
+                sx={{ color: "#9c2a2a", borderColor: "#9c2a2a", height: 40, alignSelf: 'center' }}
+                onClick={dismissAllNotifications}
+              >
+                Dismiss All
+              </Button>
+            </Box>
             <List>
               {notifications.map((notification) => (
                 <Fade key={notification._id} in={checked} timeout={600}>

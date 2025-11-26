@@ -100,9 +100,6 @@ function Login({ handleLoginState }) {
     navigate("/registration");
   };
 
-  const handleGoogleSignIn = () => {
-    alert("Google Sign-In coming soon!");
-  };
 
   return (
     <Container sx={{ mt: 8, mb: 8 }}>
@@ -165,21 +162,7 @@ function Login({ handleLoginState }) {
                     Sign Up
                   </Button>
                 </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    onClick={handleGoogleSignIn}
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#4285F4",
-                      color: "#fff",
-                      fontWeight: "bold",
-                      "&:hover": { backgroundColor: "#357ae8" },
-                    }}
-                  >
-                    Sign in with Google
-                  </Button>
-                </Grid>
+                
               </Grid>
             </Box>
             <Collapse in={loginSuccess}>

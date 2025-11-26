@@ -88,20 +88,14 @@ eventDetailsSchema.pre(
   { document: true, query: false },
   async function (next) {
     try {
-      const eventId = this._id;
-      
-      // Delete all notifications associated with this event
-      const deletedNotifs = await Notifs.deleteMany({ event: eventId });
-      console.log(
-        `Deleted ${deletedNotifs.deletedCount} notifications for event ${eventId}`
-      );
+        const eventId = this._id;
 
-      // Delete all volunteer history records for this event
-      const VolunteerHistory = require('./VolunteerHistory');
-      const deletedHistory = await VolunteerHistory.deleteMany({ eventId });
-      console.log(
-        `Deleted ${deletedHistory.deletedCount} volunteer history records for event ${eventId}`
-      );
+        // Delete all volunteer history records for this event
+        const VolunteerHistory = require('./VolunteerHistory');
+        const deletedHistory = await VolunteerHistory.deleteMany({ eventId });
+        console.log(
+          `Deleted ${deletedHistory.deletedCount} volunteer history records for event ${eventId}`
+        );
 
       next();
     } catch (error) {

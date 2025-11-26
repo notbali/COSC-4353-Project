@@ -67,12 +67,46 @@ router.get("/:id", async (req, res) => {
 // Update event by ID
 router.put("/update/:id", async (req, res) => {
   try {
+    console.log('Update event called with id:', req.params.id, 'body:', req.body);
     const event = await EventDetails.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
     if (!event) {
+      console.warn('Event not found for update:', req.params.id);
       return res.status(404).send({ message: "Event not found" });
     }
+
+    console.log('Event updated in DB:', event._id);
+
+    // Notify assigned volunteers about the update
+    try {
+      const histories = await VolunteerHistory.find({ eventId: event._id });
+      const userIds = histories.map(h => h.userId).filter(Boolean);
+      console.log('Notifying users about event update:', userIds);
+      for (const uid of userIds) {
+        try {
+          const notifPayload = {
+            event: event._id,
+            user: uid,
+            title: 'Event updated',
+            message: `The event "${event.eventName}" has been updated.`,
+            eventName: event.eventName,
+            eventDescription: event.eventDescription,
+            location: event.location,
+            eventDate: event.eventDate,
+            createdAt: new Date(),
+          };
+          const created = await Notifs.create(notifPayload);
+          console.log('Created update notification for user', uid, 'notifId:', created._id);
+        } catch (nerr) {
+          console.error('Failed to create update notification for user', uid, nerr);
+        }
+      }
+    } catch (notifErr) {
+      console.error('Failed to fetch histories for update notifications:', notifErr);
+    }
+
     res.status(200).send({ message: "Event updated successfully", event });
   } catch (error) {
     if (error.name === 'ValidationError') {
@@ -96,21 +130,50 @@ router.delete("/delete/:id", async (req, res) => {
     // Gather volunteers assigned to this event so we can notify them
     try {
       const histories = await VolunteerHistory.find({ eventId: event._id });
+      console.log(`Found ${histories.length} volunteer histories for event ${event._id}`);
       const userIds = histories.map(h => h.userId).filter(Boolean);
+      console.log('User IDs to notify for cancellation:', userIds);
 
-      // Create a notification for each assigned volunteer
+      // Create a notification for each assigned volunteer and log result
+      // Use a different message/title for per-user notifications so
+      // registered users get a 'removed' notice instead of a duplicate
+      // global cancellation message.
       for (const uid of userIds) {
         try {
-          await Notifs.create({
+          const notifPayload = {
             event: event._id,
             user: uid,
-            title: 'Event canceled',
-            message: `The event "${event.eventName}" has been canceled.`,
+            title: 'You have been removed from an event',
+            message: `You have been removed from the event: ${event.eventName}`,
+            eventName: event.eventName,
+            eventDescription: event.eventDescription,
+            location: event.location,
+            eventDate: event.eventDate,
             createdAt: new Date(),
-          });
+          };
+          const created = await Notifs.create(notifPayload);
+          console.log('Created per-user removal notification for user', uid, 'notifId:', created._id);
         } catch (nerr) {
-          console.error('Failed to create cancel notification for user', uid, nerr);
+          console.error('Failed to create removal notification for user', uid, nerr);
         }
+      }
+
+      // Also create a global cancellation notification so every user sees it
+      try {
+        const globalPayload = {
+          event: event._id,
+          title: 'Event canceled',
+          message: `The event "${event.eventName}" has been canceled.`,
+          eventName: event.eventName,
+          eventDescription: event.eventDescription,
+          location: event.location,
+          eventDate: event.eventDate,
+          createdAt: new Date(),
+        };
+        const globalNotif = await Notifs.create(globalPayload);
+        console.log('Created global cancel notification notifId:', globalNotif._id);
+      } catch (gerr) {
+        console.error('Failed to create global cancel notification:', gerr);
       }
     } catch (histErr) {
       console.error('Failed to fetch volunteer histories for notifications:', histErr);

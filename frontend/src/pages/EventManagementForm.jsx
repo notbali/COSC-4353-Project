@@ -132,11 +132,10 @@ const EventManagementForm = () => {
 
         // trigger the notification creation by making a separate API call to the notifsRoutes
         try {
-          const userId = localStorage.getItem("userId");
+          // Create a GLOBAL "new event" notification so all users see it.
           const notificationPayload = {
-            eventId: response.data.data?._id || response.data._id, // try both shapes
+            eventId: response.data.data?._id || response.data._id,
             notifType: "new event",
-            userId: userId || null,
           };
           const notifresponse = await axios.post(`${API_BASE}/notifs/create`, notificationPayload, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
