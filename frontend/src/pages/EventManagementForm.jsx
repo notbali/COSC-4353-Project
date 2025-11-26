@@ -94,27 +94,30 @@ const EventManagementForm = () => {
         requiredSkills,
         urgency,
         eventDate,
+        eventDateISO: new Date(eventDate).toISOString().split("T")[0], // store date in ISO format (YYYY-MM-DD)
       };
 
       try {
-        const response = await axios.post(
-          "http://localhost:4000/events/create",
-          eventData
-        );
+        const API_BASE = "http://localhost:5001/api";
+        const token = localStorage.getItem("token");
+
+        const response = await axios.post(`${API_BASE}/events/create`, eventData, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         console.log("Event created:", response.data);
+
         // trigger the notification creation by making a separate API call to the notifsRoutes
         try {
           const notificationPayload = {
-            eventId: response.data.data._id, //sends the newly created event's ID
+            eventId: response.data.data?._id || response.data._id, // try both shapes
             notifType: "new event",
           };
-          const notifresponse = await axios.post(
-            "http://localhost:4000/notifs/create",
-            notificationPayload
-          );
+          const notifresponse = await axios.post(`${API_BASE}/notifs/create`, notificationPayload, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
           console.log("Notification response:", notifresponse.data);
         } catch (notifError) {
-          console.error("Error creating notification:", notifError.message);
+          console.error("Error creating notification:", notifError);
         }
 
         // clear the form
@@ -127,8 +130,17 @@ const EventManagementForm = () => {
         setFormSubmitted(true);
         setTimeout(() => setFormSubmitted(false), 3000);
       } catch (error) {
+        // better error details
         console.error("Failed to create event:", error);
-        alert("Failed to create event. Please try again."); // optionally alert the user
+        if (error.response) {
+          console.error("Response data:", error.response.data);
+          alert(`Failed to create event: ${error.response.data.message || JSON.stringify(error.response.data)}`);
+        } else if (error.request) {
+          console.error("No response received, request:", error.request);
+          alert("Failed to create event: Network error (no response). Check backend is running.");
+        } else {
+          alert(`Failed to create event: ${error.message}`);
+        }
       } finally {
         setIsSubmitting(false); // ensure loading state is reset
       }

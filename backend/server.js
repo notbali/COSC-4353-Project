@@ -17,9 +17,14 @@ app.listen(5001, () => console.log('Server running on port 5001'));
 const volunteerRoutes = require('./routes/history');
 const matchRoutes = require('./routes/match');
 const profileRoutes = require('./routes/profile');
+const eventRoutes = require('./routes/eventRoutes');
+const notifsRoutes = require('./routes/notifsRoutes');
 app.use('/api', volunteerRoutes);
 app.use('/api', matchRoutes);
 app.use('/api', profileRoutes);
+// Mount events and notifications under /api/events and /api/notifs
+app.use('/api/events', eventRoutes);
+app.use('/api/notifs', notifsRoutes);
 
 // Registration route
 app.post('/api/register', async (req, res) => {
