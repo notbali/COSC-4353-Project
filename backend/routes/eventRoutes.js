@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const EventDetails = require("../models/Event");
+const VolunteerHistory = require("../models/VolunteerHistory");
+const Notifs = require("../models/Notifs");
 
 // create a new event
 router.post("/create", async (req, res) => {
@@ -91,7 +93,30 @@ router.delete("/delete/:id", async (req, res) => {
       return res.status(404).send({ message: "Event not found" });
     }
 
-    await event.deleteOne(); // Trigger the middleware
+    // Gather volunteers assigned to this event so we can notify them
+    try {
+      const histories = await VolunteerHistory.find({ eventId: event._id });
+      const userIds = histories.map(h => h.userId).filter(Boolean);
+
+      // Create a notification for each assigned volunteer
+      for (const uid of userIds) {
+        try {
+          await Notifs.create({
+            event: event._id,
+            user: uid,
+            title: 'Event canceled',
+            message: `The event "${event.eventName}" has been canceled.`,
+            createdAt: new Date(),
+          });
+        } catch (nerr) {
+          console.error('Failed to create cancel notification for user', uid, nerr);
+        }
+      }
+    } catch (histErr) {
+      console.error('Failed to fetch volunteer histories for notifications:', histErr);
+    }
+
+    await event.deleteOne(); // Trigger the middleware (which may also delete histories)
     res
       .status(200)
       .send({ message: "Event and associated data deleted successfully" });

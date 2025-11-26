@@ -25,6 +25,7 @@ app.use('/api', matchRoutes);
 app.use('/api', profileRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/notifs', notifsRoutes);
 
 const buildProfileDefaults = (payload = {}) => {
   const {

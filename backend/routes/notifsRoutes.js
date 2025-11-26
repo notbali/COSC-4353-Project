@@ -4,14 +4,16 @@ const Notifs = require("../models/Notifs");
 const Event = require("../models/Event");
 
 // POST /create route
+// POST /create route
+// Allow creating either user-specific notifications (pass userId) or global notifications (omit userId)
 router.post("/create", async (req, res) => {
   try {
     const { eventId, notifType, userId } = req.body;
 
-    // Add validation that your tests expect
-    if (!eventId || !notifType || !userId) {
+    // Validate required fields for event-based notifications
+    if (!eventId || !notifType) {
       return res.status(400).json({
-        message: "Event ID, notification type, and user ID are required.",
+        message: "Event ID and notification type are required.",
       });
     }
 
@@ -47,13 +49,17 @@ router.post("/create", async (req, res) => {
         title = "Notification";
     }
 
-    const notification = await Notifs.create({
+    const createPayload = {
       event: eventId,
-      user: userId,
       title: title,
       message: `${title} - ${event.eventName}`,
       createdAt: new Date(),
-    });
+    };
+
+    // Attach user if provided (user-specific notification)
+    if (userId) createPayload.user = userId;
+
+    const notification = await Notifs.create(createPayload);
 
     res.status(201).json({
       message: "Notification created successfully.",
@@ -159,9 +165,17 @@ router.get("/all", async (req, res) => {
   try {
     const { userId } = req.query;
     console.log("Fetching notifications for userId:", userId);
+    // If userId provided, return notifications targeted to that user OR global notifications
     let query = {};
     if (userId) {
-      query.user = userId;
+      // return notifications targeted to that user OR global notifications,
+      // and exclude notifications the user has dismissed (dismissedBy contains userId)
+      query = {
+        $and: [
+          { $or: [{ user: userId }, { user: { $exists: false } }, { user: null }] },
+          { $or: [ { dismissedBy: { $exists: false } }, { dismissedBy: { $ne: userId } } ] }
+        ]
+      };
     }
 
     const notifications = await Notifs.find(query)
@@ -178,3 +192,19 @@ router.get("/all", async (req, res) => {
 });
 
 module.exports = router;
+
+// POST /dismiss route - mark a notification dismissed for a user
+router.post('/dismiss', async (req, res) => {
+  try {
+    const { notifId, userId } = req.body;
+    if (!notifId || !userId) {
+      return res.status(400).json({ message: 'notifId and userId are required' });
+    }
+
+    await Notifs.findByIdAndUpdate(notifId, { $addToSet: { dismissedBy: userId } });
+    res.status(200).json({ message: 'Notification dismissed' });
+  } catch (error) {
+    console.error('Error dismissing notification:', error);
+    res.status(500).json({ message: 'Error dismissing notification' });
+  }
+});

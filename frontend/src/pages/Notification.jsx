@@ -10,6 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import axios from "axios";
+import { API_BASE_URL } from '../apiConfig';
 
 const Notification = ({ currentUser }) => {
   const [notifications, setNotifications] = useState([]);
@@ -25,9 +26,9 @@ const Notification = ({ currentUser }) => {
         }
         console.log("Current User ID:", currentUser); // check if userId is coming through correctly
 
-        const response = await axios.get(
-          `http://localhost:5001/notifs/all?userId=${currentUser}`
-        );
+        const url = `${API_BASE_URL}/notifs/all?userId=${currentUser}`;
+        console.log('Fetching notifications from', url);
+        const response = await axios.get(url);
         // Keep newest first; backend already sorts desc
         const data = Array.isArray(response.data) ? response.data : [];
         // Normalize to support either flattened or populated event fields
@@ -60,11 +61,22 @@ const Notification = ({ currentUser }) => {
     return () => clearInterval(interval);
   }, [currentUser]);
 
-  // function to dismiss a notification
-  const dismissNotification = (id) => {
-    setNotifications((prevNotifications) =>
-      prevNotifications.filter((notification) => notification._id !== id)
-    );
+  // function to dismiss a notification (persist dismissal to backend)
+  const dismissNotification = async (id) => {
+    try {
+      // call backend to persist dismissal
+      await axios.post(`${API_BASE_URL}/notifs/dismiss`, { notifId: id, userId: currentUser });
+      // on success, remove from local state
+      setNotifications((prevNotifications) =>
+        prevNotifications.filter((notification) => notification._id !== id)
+      );
+    } catch (err) {
+      console.error('Error dismissing notification:', err);
+      // fallback to local removal so UI remains responsive
+      setNotifications((prevNotifications) =>
+        prevNotifications.filter((notification) => notification._id !== id)
+      );
+    }
   };
 
   const [checked] = useState(true);

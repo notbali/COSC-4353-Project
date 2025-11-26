@@ -19,6 +19,8 @@ const notifsSchema = new Schema(
       ref: "UserCredentials",
       required: false,
     },
+    // List of user IDs who have dismissed this notification
+    dismissedBy: [{ type: Schema.Types.ObjectId, ref: "UserCredentials" }],
   },
   { timestamps: true }
 ); // adding createdAt/updatedAt fields

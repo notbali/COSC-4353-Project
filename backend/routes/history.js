@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const EventDetails = require('../models/Event');
 const VolunteerHistory = require('../models/VolunteerHistory');
+const Notifs = require('../models/Notifs');
 
 // List Volunteers
 router.get('/volunteers', async (req, res) => {
@@ -126,6 +127,19 @@ router.post('/volunteer-history', async (req, res) => {
 		// Update event volunteer count
 		event.currentVolunteers = (event.currentVolunteers || 0) + 1;
 		await event.save();
+
+		// Create notification for the user about registration
+		try {
+			await Notifs.create({
+				event: event._id,
+				user: userId,
+				title: 'You have registered for an event',
+				message: `You have been registered for the event: ${event.eventName}`,
+				createdAt: new Date()
+			});
+		} catch (notifErr) {
+			console.error('Failed to create registration notification:', notifErr);
+		}
 		
 		res.status(201).json({ message: 'Successfully registered for event', historyRecord });
 	} catch (error) {
@@ -155,6 +169,19 @@ router.delete('/volunteer-history/:userId/:eventId', async (req, res) => {
 		if (event) {
 			event.currentVolunteers = Math.max((event.currentVolunteers || 1) - 1, 0);
 			await event.save();
+		}
+
+		// Notify the user that they've been unregistered
+		try {
+			await Notifs.create({
+				event: eventId,
+				user: userId,
+				title: 'You have been removed from an event',
+				message: `You have been removed from the event: ${event ? event.eventName : eventId}`,
+				createdAt: new Date()
+			});
+		} catch (notifErr) {
+			console.error('Failed to create deregistration notification:', notifErr);
 		}
 		
 		res.status(200).json({ message: 'Successfully unregistered from event' });
