@@ -14,9 +14,13 @@ app.use(express.json());
 const volunteerRoutes = require('./routes/history');
 const matchRoutes = require('./routes/match');
 const profileRoutes = require('./routes/profile');
+const eventRoutes = require('./routes/eventRoutes');
+const reportRoutes = require('./routes/reports');
 app.use('/api', volunteerRoutes);
 app.use('/api', matchRoutes);
 app.use('/api', profileRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/reports', reportRoutes);
 
 const buildProfileDefaults = (payload = {}) => {
   const {
