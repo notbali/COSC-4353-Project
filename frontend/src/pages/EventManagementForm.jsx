@@ -44,6 +44,7 @@ const StyledButton = styled(Button)({
 });
 
 const EventManagementForm = () => {
+  // Declare hooks unconditionally (rules of hooks)
   const [eventName, setEventName] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -53,6 +54,29 @@ const EventManagementForm = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Check user role from localStorage and block non-admins
+  const storedUserRole = localStorage.getItem("userRole") || "";
+  if (storedUserRole !== "admin") {
+    return (
+      <Container sx={{ mt: 5, mb: 5 }}>
+        <Fade in={true} timeout={600}>
+          <StyledCard>
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="div"
+                align="center"
+                sx={{ color: "#184b69ff", fontWeight: "bold" }}
+              >
+                User is Not Authorized to Use
+              </Typography>
+            </CardContent>
+          </StyledCard>
+        </Fade>
+      </Container>
+    );
+  }
 
   const skillOptions = [
     "Food Preparation & Serving",
@@ -94,27 +118,30 @@ const EventManagementForm = () => {
         requiredSkills,
         urgency,
         eventDate,
+        eventDateISO: new Date(eventDate).toISOString().split("T")[0], // store date in ISO format (YYYY-MM-DD)
       };
 
       try {
-        const response = await axios.post(
-          "http://localhost:4000/events/create",
-          eventData
-        );
+        const API_BASE = "http://localhost:5001/api";
+        const token = localStorage.getItem("token");
+
+        const response = await axios.post(`${API_BASE}/events/create`, eventData, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         console.log("Event created:", response.data);
+
         // trigger the notification creation by making a separate API call to the notifsRoutes
         try {
           const notificationPayload = {
-            eventId: response.data.data._id, //sends the newly created event's ID
+            eventId: response.data.data?._id || response.data._id, // try both shapes
             notifType: "new event",
           };
-          const notifresponse = await axios.post(
-            "http://localhost:4000/notifs/create",
-            notificationPayload
-          );
+          const notifresponse = await axios.post(`${API_BASE}/notifs/create`, notificationPayload, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
           console.log("Notification response:", notifresponse.data);
         } catch (notifError) {
-          console.error("Error creating notification:", notifError.message);
+          console.error("Error creating notification:", notifError);
         }
 
         // clear the form
@@ -127,8 +154,17 @@ const EventManagementForm = () => {
         setFormSubmitted(true);
         setTimeout(() => setFormSubmitted(false), 3000);
       } catch (error) {
+        // better error details
         console.error("Failed to create event:", error);
-        alert("Failed to create event. Please try again."); // optionally alert the user
+        if (error.response) {
+          console.error("Response data:", error.response.data);
+          alert(`Failed to create event: ${error.response.data.message || JSON.stringify(error.response.data)}`);
+        } else if (error.request) {
+          console.error("No response received, request:", error.request);
+          alert("Failed to create event: Network error (no response). Check backend is running.");
+        } else {
+          alert(`Failed to create event: ${error.message}`);
+        }
       } finally {
         setIsSubmitting(false); // ensure loading state is reset
       }

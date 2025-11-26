@@ -24,26 +24,28 @@ const EventList = () => {
   const [pastEvents, setPastEvents] = React.useState([]);
   const [currentUserId, setCurrentUserId] = React.useState(null);
   const [currentUserName, setCurrentUserName] = React.useState('');
+  const storedUserRole = localStorage.getItem('userRole') || '';
+
+  // Fetch events function so it can be reused after updates
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch('http://localhost:5001/api/events');
+      if (!res.ok) throw new Error('no backend');
+      const data = await res.json();
+      setFutureEvents((data && data.futureEvents) || []);
+      setPastEvents((data && data.pastEvents) || []);
+    } catch (err) {
+      console.error('Failed to fetch events:', err.message);
+    }
+  };
 
   React.useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch('http://localhost:5001/api/events');
-        if (!res.ok) throw new Error('no backend');
-        const data = await res.json();
-        setFutureEvents((data && data.futureEvents) || []);
-        setPastEvents((data && data.pastEvents) || []);
-      } catch (err) {
-        console.error('Failed to fetch events:', err.message);
-      }
-    };
-    
     // Get current user info
     const userId = localStorage.getItem('userId');
     const userName = localStorage.getItem('userName');
     setCurrentUserId(userId);
     setCurrentUserName(userName);
-    
+
     fetchEvents();
   }, []);
 
@@ -66,7 +68,7 @@ const EventList = () => {
         if (response.ok) {
           alert('Successfully unregistered from event!');
           // Refresh the events to show updated assignments
-          window.location.reload();
+          fetchEvents();
         } else {
           const errorData = await response.json();
           alert(errorData.message || 'Failed to unregister from event');
@@ -88,7 +90,7 @@ const EventList = () => {
         if (response.ok) {
           alert('Successfully registered for event!');
           // Refresh the events to show updated assignments
-          window.location.reload();
+          fetchEvents();
         } else {
           const errorData = await response.json();
           alert(errorData.message || 'Failed to register for event');
@@ -97,6 +99,31 @@ const EventList = () => {
     } catch (error) {
       console.error('Error toggling assignment:', error);
       alert('Failed to update assignment');
+    }
+  };
+
+  // Admin: deregister a volunteer from an event
+  const deregisterVolunteer = async (volunteerId, eventId) => {
+    if (!volunteerId || !eventId) return;
+    if (!window.confirm('Remove this volunteer from the event?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5001/api/volunteer-history/${volunteerId}/${eventId}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (res.ok) {
+        alert('Volunteer removed from event');
+        fetchEvents();
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to remove volunteer');
+      }
+    } catch (err) {
+      console.error('Error removing volunteer:', err);
+      alert('Network error while removing volunteer');
     }
   };
 
@@ -133,6 +160,7 @@ const EventList = () => {
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Event Date</th>
                     <th style={{ border: '1px solid #ddd', padding: '8px' }}>Assigned Volunteers</th>
                     {currentUserId && <th style={{ border: '1px solid #ddd', padding: '8px', width: '85px' }}>Actions</th>}
+                    {storedUserRole === 'admin' && <th style={{ border: '1px solid #ddd', padding: '8px', width: '120px' }}>Admin</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -148,9 +176,27 @@ const EventList = () => {
                         {event.assignedVolunteers && event.assignedVolunteers.length > 0 ? (
                           <div>
                             {event.assignedVolunteers.map((volunteer, idx) => (
-                              <div key={idx} style={{ marginBottom: '4px' }}>
-                                <strong>{volunteer.volunteerName}</strong>
-                                <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
+                              <div key={idx} style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div>
+                                  <strong>{volunteer.volunteerName}</strong>
+                                  <span style={{ fontSize: '0.8em', color: '#666' }}> ({volunteer.status})</span>
+                                </div>
+                                {storedUserRole === 'admin' && (
+                                  <button
+                                    onClick={() => deregisterVolunteer(volunteer.volunteerId, event._id)}
+                                    style={{
+                                      backgroundColor: '#dc3545',
+                                      color: 'white',
+                                      border: 'none',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontSize: '12px'
+                                    }}
+                                  >
+                                    Deregister
+                                  </button>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -177,6 +223,43 @@ const EventList = () => {
                             {event.assignedVolunteers && 
                               event.assignedVolunteers.some(volunteer => volunteer.volunteerId === currentUserId) 
                               ? 'Cancel' : 'Sign Up'}
+                          </button>
+                        </td>
+                      )}
+                      {storedUserRole === 'admin' && (
+                        <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center' }}>
+                          <button
+                            onClick={async () => {
+                              if (!window.confirm('Delete this event? This action cannot be undone.')) return;
+                              try {
+                                const token = localStorage.getItem('token');
+                                const res = await fetch(`http://localhost:5001/api/events/delete/${event._id}`, {
+                                  method: 'DELETE',
+                                  headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                });
+                                if (res.ok) {
+                                  alert('Event deleted');
+                                  fetchEvents();
+                                } else {
+                                  const data = await res.json();
+                                  alert(data.message || 'Failed to delete event');
+                                }
+                              } catch (err) {
+                                console.error('Error deleting event:', err);
+                                alert('Network error while deleting event');
+                              }
+                            }}
+                            style={{
+                              backgroundColor: '#9c2a2a',
+                              color: 'white',
+                              border: 'none',
+                              padding: '6px 10px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            Delete Event
                           </button>
                         </td>
                       )}

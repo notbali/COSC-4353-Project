@@ -79,4 +79,20 @@ router.put('/profile/edit', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/profile/:userId/role
+router.get('/profile/:userId/role', authenticate, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find user profile by userId
+    const userProfile = await UserProfile.findOne({ userId });
+    if (!userProfile) return res.status(404).json({ message: 'Profile not found' });
+    // Return the user role
+    res.json({ userRole: userProfile.userRole });
+  } catch (err) {
+    console.error('Error fetching user role:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 module.exports = router;

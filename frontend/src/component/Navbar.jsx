@@ -105,11 +105,60 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
             >
               Home
             </Button>
+            <Button
+                      component={Link}
+                      to="/event-list"
+                      sx={{
+                        color: "#fff",
+                        marginRight: "10px",
+                        backgroundColor: isActive("/event-list")
+                          ? "#184b69ff"
+                          : "inherit",
+                        "&:hover": { backgroundColor: "#184b69ff" },
+                        fontWeight: isActive("/event-list") ? "bold" : "normal",
+                      }}
+                    >
+                      Events
+                    </Button>
             {isLoggedIn && (
               <>
                 {/* Links for Admin Users */}
                 {userRole === "admin" && (
                   <>
+                    <Button
+                      component={Link}
+                      to="/volunteer-history"
+                      sx={{
+                        color: "#fff",
+                        marginRight: "10px",
+                        backgroundColor: isActive("/volunteer-history")
+                          ? "#184b69ff"
+                          : "inherit",
+                        "&:hover": { backgroundColor: "#184b69ff" },
+                        fontWeight: isActive("/volunteer-history")
+                          ? "bold"
+                          : "normal",
+                      }}
+                    >
+                      Volunteer History
+                    </Button>
+                    <Button
+                      component={Link}
+                      to="/notification"
+                      sx={{
+                        color: "#fff",
+                        marginRight: "10px",
+                        backgroundColor: isActive("/notification")
+                          ? "#184b69ff"
+                          : "inherit",
+                        "&:hover": { backgroundColor: "#184b69ff" },
+                        fontWeight: isActive("/notification")
+                          ? "bold"
+                          : "normal",
+                      }}
+                    >
+                      Notifications
+                    </Button>
                     <Button
                       component={Link}
                       to="/event-management"
@@ -144,43 +193,12 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                     >
                       Volunteer Matching
                     </Button>
-                    <Button
-                      component={Link}
-                      to="/admin-dashboard"
-                      sx={{
-                        color: "#fff",
-                        marginRight: "10px",
-                        backgroundColor: isActive("/admin-dashboard")
-                          ? "#184b69ff"
-                          : "inherit",
-                        "&:hover": { backgroundColor: "#184b69ff" },
-                        fontWeight: isActive("/admin-dashboard")
-                          ? "bold"
-                          : "normal",
-                      }}
-                    >
-                      Admin Dashboard
-                    </Button>
+                    
                   </>
                 )}
                 {/* Links for Regular Users */}
                 {userRole === "user" && (
                   <>
-                    <Button
-                      component={Link}
-                      to="/event-list"
-                      sx={{
-                        color: "#fff",
-                        marginRight: "10px",
-                        backgroundColor: isActive("/event-list")
-                          ? "#184b69ff"
-                          : "inherit",
-                        "&:hover": { backgroundColor: "#184b69ff" },
-                        fontWeight: isActive("/event-list") ? "bold" : "normal",
-                      }}
-                    >
-                      Events
-                    </Button>
                     <Button
                       component={Link}
                       to="/volunteer-history"

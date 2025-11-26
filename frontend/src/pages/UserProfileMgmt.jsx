@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
+  Card,
+  Container,
+  CardContent,
   Typography,
   Box,
   Paper,
@@ -19,6 +22,16 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import ListItemText from '@mui/material/ListItemText';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
+
+const StyledCard = styled(Card)({
+  background: "#f5f5f5",
+  boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+  borderRadius: "15px",
+  padding: "20px",
+  maxWidth: "800px",
+  margin: "auto",
+  transition: "all 0.3s ease",
+});
 
 const UserProfileMgmt = ({userId}) => {
   const navigate = useNavigate();

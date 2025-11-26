@@ -38,7 +38,7 @@ const StyledButton = styled(Button)({
   },
 });
 
-function Login() {
+function Login({ handleLoginState }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,14 +72,20 @@ function Login() {
 
     if (response.ok && data.token) {
       setLoginSuccess(true);
-      // Optionally store the token
+      // Store token and basic info
       localStorage.setItem('token', data.token);
       localStorage.setItem('userName', username);
       localStorage.setItem('userId', data.id);
+
+      // Inform App about login so it can update state and fetch role
+      if (typeof handleLoginState === 'function') {
+        handleLoginState(username, data.id, data.token);
+      }
+
       setTimeout(() => {
         setLoginSuccess(false);
         navigate('/'); // Redirect after login
-      }, 1500);
+      }, 500);
     } else {
       setErrors({ general: data.message || 'Login failed' });
       setIsSubmitting(false);

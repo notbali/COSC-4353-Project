@@ -95,6 +95,12 @@ const userProfileSchema = new mongoose.Schema({
       },
       message: 'Availability dates must be in YYYY-MM-DD format'
     }
+  },
+  userRole: {
+    type: String,
+    required: true,
+    enum: ['admin', 'user'],
+    default: 'user'
   }
 }, {
   timestamps: true

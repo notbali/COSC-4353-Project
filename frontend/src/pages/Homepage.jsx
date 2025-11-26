@@ -96,6 +96,24 @@ const Homepage = ({ userRole, isLoggedIn }) => {
   const featureCards = {
     admin: [
       {
+        title: "Discover Opportunities",
+        path: "/event-list",
+        description:
+          "Get involved today and find available volunteer opportunities! Discover events that match your interests and skills.",
+      },
+      {
+        title: "Volunteer History",
+        path: "/volunteer-history",
+        description:
+          "View your past event participation and history. Keep track of your contributions and impact.",
+      },
+      {
+        title: "Notifications",
+        path: "/notification",
+        description:
+          "Subscribe to notifications for updates on new events and announcements! Stay informed and never miss an opportunity.",
+      },
+      {
         title: "Manage Events",
         path: "/event-management",
         description:
@@ -106,11 +124,6 @@ const Homepage = ({ userRole, isLoggedIn }) => {
         path: "/volunteer-matching-form",
         description:
           "Match volunteers with events based compatability with their skills and availability.",
-      },
-      {
-        title: "Admin Dashboard",
-        path: "/admin-dashboard",
-        description: "Access advanced tools to manage your platform.",
       },
     ],
     user: [
@@ -131,12 +144,28 @@ const Homepage = ({ userRole, isLoggedIn }) => {
         path: "/notification",
         description:
           "Subscribe to notifications for updates on new events and announcements! Stay informed and never miss an opportunity.",
-      },
-    ],
+      }
+      ],
+      guest: [
+        {
+          title: "Discover Opportunities",
+          path: "/event-list",
+          description:
+            "Get involved today and find available volunteer opportunities! Discover events that match your interests and skills.",
+        },
+        {
+        title: "Notifications",
+        path: "/notification",
+        description:
+          "Subscribe to notifications for updates on new events and announcements! Stay informed and never miss an opportunity.",
+      }
+      
+      
+      ]
   };
 
   // Get features based on passed userRole;
-  const features = featureCards[userRole] || featureCards["user"]; // Default to 'user' if role is undefined
+  const features = featureCards[userRole] || featureCards["guest"]; // Default to 'guest' if role is undefined
 
   return (
     <>
@@ -178,10 +207,10 @@ const Homepage = ({ userRole, isLoggedIn }) => {
           ) : null}
         </HeroSection>
 
-        <Grid container spacing={2} sx={{ mt: -2 }}>
+        <Grid container spacing={2} sx={{ mt: -2, justifyContent: "center" }}>
           {features.map((feature, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              <FeatureCard onClick={() => handleCardClick(feature.path)}>
+            <Grid item xs={12} md={4} key={index} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <FeatureCard sx={{ width: '100%', maxWidth: 360 }} onClick={() => handleCardClick(feature.path)}>
                 <Typography
                   variant="h5"
                   className="feature-title"
