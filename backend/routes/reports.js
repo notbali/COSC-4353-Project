@@ -35,6 +35,7 @@ async function isAdmin(userId) {
 // Get volunteers with participation history
 router.get('/volunteers', authenticate, async (req, res) => {
   try {
+    console.log('/reports/volunteers called by:', req.user);
     const userProfiles = await UserProfile.find({}).populate('userId', 'username email');
     
     const volunteersWithHistory = await Promise.all(
@@ -78,6 +79,7 @@ router.get('/volunteers', authenticate, async (req, res) => {
 // Get events with volunteer assignments
 router.get('/events', authenticate, async (req, res) => {
   try {
+    console.log('/reports/events called by:', req.user);
     const events = await EventDetails.find({}).sort({ eventDate: -1 });
     
     const eventsWithVolunteers = await Promise.all(
@@ -87,12 +89,31 @@ router.get('/events', authenticate, async (req, res) => {
         
         const assignedVolunteers = await Promise.all(
           volunteerHistories.map(async (history) => {
-            const userProfile = await UserProfile.findOne({ userId: history.userId._id });
+            // history.userId may be null if the referenced user was deleted
+            const populatedUser = history.userId;
+            let volunteerId = null;
+            let volunteerName = history.volunteerName || '';
+            let username = null;
+            let email = null;
+
+            if (populatedUser) {
+              volunteerId = populatedUser._id;
+              username = populatedUser.username;
+              email = populatedUser.email;
+              const userProfile = await UserProfile.findOne({ userId: volunteerId });
+              if (userProfile && userProfile.fullName) {
+                volunteerName = userProfile.fullName;
+              }
+            } else if (history.userId) {
+              // If not populated but still present as an ObjectId
+              volunteerId = history.userId;
+            }
+
             return {
-              volunteerId: history.userId._id,
-              volunteerName: userProfile ? userProfile.fullName : history.volunteerName,
-              username: history.userId.username,
-              email: history.userId.email,
+              volunteerId: volunteerId,
+              volunteerName: volunteerName,
+              username: username,
+              email: email,
               status: history.status,
               hoursVolunteered: history.hoursVolunteered || 0,
               assignedAt: history.createdAt,
