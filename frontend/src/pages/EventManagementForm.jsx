@@ -44,6 +44,7 @@ const StyledButton = styled(Button)({
 });
 
 const EventManagementForm = () => {
+  // Declare hooks unconditionally (rules of hooks)
   const [eventName, setEventName] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -53,6 +54,29 @@ const EventManagementForm = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Check user role from localStorage and block non-admins
+  const storedUserRole = localStorage.getItem("userRole") || "";
+  if (storedUserRole !== "admin") {
+    return (
+      <Container sx={{ mt: 5, mb: 5 }}>
+        <Fade in={true} timeout={600}>
+          <StyledCard>
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="div"
+                align="center"
+                sx={{ color: "#184b69ff", fontWeight: "bold" }}
+              >
+                User is Not Authorized to Use
+              </Typography>
+            </CardContent>
+          </StyledCard>
+        </Fade>
+      </Container>
+    );
+  }
 
   const skillOptions = [
     "Food Preparation & Serving",

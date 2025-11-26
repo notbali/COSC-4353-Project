@@ -66,7 +66,30 @@ const VolunteerHistory = () => {
       }
     };
     fetchUserEvents();
+    
   }, []);
+
+  const storedUserRole = localStorage.getItem("userRole") || "";
+    if (!(storedUserRole === "admin" || storedUserRole === "user")) {
+      return (
+        <Container sx={{ mt: 5, mb: 5 }}>
+          <Fade in={true} timeout={600}>
+            <StyledCard>
+              <CardContent>
+                <Typography
+                  variant="h5"
+                  component="div"
+                  align="center"
+                  sx={{ color: "#184b69ff", fontWeight: "bold" }}
+                >
+                  User is Not Authorized to Use
+                </Typography>
+              </CardContent>
+            </StyledCard>
+          </Fade>
+        </Container>
+      );
+    }
 
   return (
     <Container sx={{ mt: 5, mb: 5 }}>

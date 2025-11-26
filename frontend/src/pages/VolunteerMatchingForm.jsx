@@ -41,6 +41,8 @@ const VolunteerMatchingForm = () => {
   const [selectedVolunteer, setSelectedVolunteer] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  
+
   useEffect(() => {
     const fetchVolunteers = async () => {
       try {
@@ -69,6 +71,28 @@ const VolunteerMatchingForm = () => {
     };
     fetchMatches();
   }, [selectedVolunteer]);
+
+  const storedUserRole = localStorage.getItem("userRole") || "";
+    if (storedUserRole !== "admin") {
+      return (
+        <Container sx={{ mt: 5, mb: 5 }}>
+          <Fade in={true} timeout={600}>
+            <StyledCard>
+              <CardContent>
+                <Typography
+                  variant="h5"
+                  component="div"
+                  align="center"
+                  sx={{ color: "#184b69ff", fontWeight: "bold" }}
+                >
+                  User is Not Authorized to Use
+                </Typography>
+              </CardContent>
+            </StyledCard>
+          </Fade>
+        </Container>
+      );
+    }
 
   const handleMatch = async (eventObj) => {
     setIsSubmitting(true);
