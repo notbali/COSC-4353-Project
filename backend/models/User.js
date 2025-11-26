@@ -42,9 +42,14 @@ const userProfileSchema = new mongoose.Schema({
     minlength: [2, 'Full name must be at least 2 characters long'],
     maxlength: [100, 'Full name cannot exceed 100 characters']
   },
-  address: { 
+  address1: { 
     type: String, 
     required: [true, 'Address is required'],
+    trim: true,
+    maxlength: [200, 'Address cannot exceed 200 characters']
+  },
+  address2: { 
+    type: String, 
     trim: true,
     maxlength: [200, 'Address cannot exceed 200 characters']
   },
@@ -60,7 +65,7 @@ const userProfileSchema = new mongoose.Schema({
     trim: true,
     maxlength: [2, 'State must be a 2-character code']
   },
-  zipcode: { 
+  zip: { 
     type: String, 
     required: [true, 'Zipcode is required'],
     trim: true,
@@ -90,6 +95,12 @@ const userProfileSchema = new mongoose.Schema({
       },
       message: 'Availability dates must be in YYYY-MM-DD format'
     }
+  },
+  userRole: {
+    type: String,
+    required: true,
+    enum: ['admin', 'user'],
+    default: 'user'
   }
 }, {
   timestamps: true

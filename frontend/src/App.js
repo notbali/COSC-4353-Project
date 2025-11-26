@@ -40,39 +40,64 @@ function App() {
   const [userId, setUserId] = useState("");
   const [userRole, setUserRole] = useState("");
 
+  const API_BASE = "http://localhost:5001/api";
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUserName = localStorage.getItem("userName");
     const storedUserId = localStorage.getItem("userId");
+    const storedUserRole = localStorage.getItem("userRole");
 
     if (token) {
       setIsLoggedIn(true);
       setUserName(storedUserName);
       setUserId(storedUserId);
+
+      // If role is in localStorage, use it immediately; then refresh from server
+      if (storedUserRole) setUserRole(storedUserRole);
+
+      // Fetch user role on app initialization
       fetchUserRole(storedUserId, token);
     }
   }, []);
 
   const fetchUserRole = async (userId, token) => {
+    if (!userId) {
+      console.warn("fetchUserRole called without userId");
+      return;
+    }
+
     try {
-      const response = await axios.get(
-        `http://localhost:4000/profile/${userId}/role`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setUserRole(response.data.role);
+      const url = `${API_BASE}/profile/${userId}/role`;
+      console.log("Fetching user role from:", url);
+      if (!token) console.warn("No token present when fetching user role");
+
+      const response = await axios.get(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const role = response?.data?.userRole;
+      if (role) {
+        setUserRole(role);
+        localStorage.setItem("userRole", role);
+      } else {
+        console.warn("Role not present in response:", response?.data);
+      }
     } catch (error) {
-      console.error("Error fetching user role:", error.message);
+      console.error("Error fetching user role:", error);
     }
   };
 
-  const handleLoginState = (name, id) => {
+  const handleLoginState = (name, id, token) => {
     setIsLoggedIn(true);
     setUserName(name);
     setUserId(id);
     localStorage.setItem("userName", name);
     localStorage.setItem("userId", id);
+    if (token) localStorage.setItem("token", token);
+
+    // Fetch user role immediately after login
+    fetchUserRole(id, token || localStorage.getItem("token"));
   };
 
   const handleLogout = () => {
@@ -82,6 +107,7 @@ function App() {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("userId");
+    localStorage.removeItem("userRole");
     window.location.href = "/";
   };
 
@@ -115,7 +141,7 @@ function App() {
                 isLoggedIn ? (
                   <EventManagementForm />
                 ) : (
-                  <EventManagementForm handleLoginState={handleLoginState} /> // changed from Login to EventManagementForm for testin
+                  <EventManagementForm handleLoginState={handleLoginState} />
                 )
               }
             />
@@ -125,7 +151,7 @@ function App() {
                 isLoggedIn ? (
                   <EventManagementForm />
                 ) : (
-                  <EventManagementForm handleLoginState={handleLoginState} /> // changed from Login to EventManagementForm for testing
+                  <EventManagementForm handleLoginState={handleLoginState} />
                 )
               }
             />

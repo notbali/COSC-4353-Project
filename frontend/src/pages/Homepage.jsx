@@ -131,12 +131,21 @@ const Homepage = ({ userRole, isLoggedIn }) => {
         path: "/notification",
         description:
           "Subscribe to notifications for updates on new events and announcements! Stay informed and never miss an opportunity.",
-      },
-    ],
+      }
+      ],
+      guest: [
+        {
+          title: "Discover Opportunities",
+          path: "/event-list",
+          description:
+            "Get involved today and find available volunteer opportunities! Discover events that match your interests and skills.",
+        }
+      
+      ]
   };
 
   // Get features based on passed userRole;
-  const features = featureCards[userRole] || featureCards["user"]; // Default to 'user' if role is undefined
+  const features = featureCards[userRole] || featureCards["guest"]; // Default to 'guest' if role is undefined
 
   return (
     <>
@@ -178,10 +187,10 @@ const Homepage = ({ userRole, isLoggedIn }) => {
           ) : null}
         </HeroSection>
 
-        <Grid container spacing={2} sx={{ mt: -2 }}>
+        <Grid container spacing={2} sx={{ mt: -2, justifyContent: "center" }}>
           {features.map((feature, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              <FeatureCard onClick={() => handleCardClick(feature.path)}>
+            <Grid item xs={12} md={4} key={index} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <FeatureCard sx={{ width: '100%', maxWidth: 360 }} onClick={() => handleCardClick(feature.path)}>
                 <Typography
                   variant="h5"
                   className="feature-title"
