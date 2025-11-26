@@ -140,6 +140,16 @@ const VolunteerMatchingForm = () => {
       }));
 
       window.alert('Volunteer matched to event and added to history!');
+      // Create matched notification for the volunteer(s)
+      try {
+        await fetch('http://localhost:5001/api/notifs/matched', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId: eventId, userIds: [selectedVolunteer] }),
+        });
+      } catch (notifErr) {
+        console.warn('Failed to create matched notification:', notifErr);
+      }
     } catch (err) {
       console.error(err);
       window.alert('Error matching volunteer: ' + (err.message || err));

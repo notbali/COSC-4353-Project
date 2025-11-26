@@ -123,6 +123,7 @@ const EventDetail = () => {
     if (validateForm()) {
       setIsSubmitting(true);
       try {
+        const token = localStorage.getItem("token");
         const response = await axios.put(
           `http://localhost:5001/api/events/update/${id}`,
           eventData
@@ -131,13 +132,16 @@ const EventDetail = () => {
 
         // Calling notification API endpoint
         try {
+          const userId = localStorage.getItem("userId");
           const notificationPayload = {
             eventId: id, // Use the ID directly, since you have it already
-            notifType: "updated event",
+            notifType: "event update",
+            userId: userId || null
           };
           const notifresponse = await axios.post(
             "http://localhost:5001/api/notifs/create",
-            notificationPayload
+            notificationPayload,
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
           );
           console.log("Notification response:", notifresponse.data);
         } catch (notifError) {
