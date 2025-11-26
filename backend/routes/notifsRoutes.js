@@ -52,6 +52,10 @@ router.post("/create", async (req, res) => {
       user: userId,
       title: title,
       message: `${title} - ${event.eventName}`,
+      eventName: event.eventName,
+      eventDescription: event.eventDescription,
+      location: event.location,
+      eventDate: event.eventDate,
       createdAt: new Date(),
     });
 

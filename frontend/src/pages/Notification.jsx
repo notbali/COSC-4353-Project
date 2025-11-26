@@ -26,7 +26,7 @@ const Notification = ({ currentUser }) => {
         console.log("Current User ID:", currentUser); // check if userId is coming through correctly
 
         const response = await axios.get(
-          `http://localhost:5001/notifs/all?userId=${currentUser}`
+          `http://localhost:5001/api/notifs/all?userId=${currentUser}`
         );
         // Keep newest first; backend already sorts desc
         const data = Array.isArray(response.data) ? response.data : [];
