@@ -14,6 +14,7 @@ import VolunteerMatchingForm from "./pages/VolunteerMatchingForm";
 import Profile from "./pages/Profile";
 import UserProfileMgmt from "./pages/UserProfileMgmt";
 import AdminDashboard from "./pages/AdminDashboard";
+import Reports from "./pages/Reports";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
@@ -179,6 +180,7 @@ function App() {
             <Route path="/profile/:userId" element={<Profile userId={userId} isLoggedIn={isLoggedIn} />} />
             <Route path="/profile/:userId/edit" element={<UserProfileMgmt userId={userId} />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="/registration" element={<Registration />} />
           </Routes>
         </div>

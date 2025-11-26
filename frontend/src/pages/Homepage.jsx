@@ -125,6 +125,12 @@ const Homepage = ({ userRole, isLoggedIn }) => {
         description:
           "Match volunteers with events based compatability with their skills and availability.",
       },
+      {
+        title: "Reports",
+        path: "/reports",
+        description:
+          "Generate comprehensive reports on volunteer activities and event management.",
+      }
     ],
     user: [
       {

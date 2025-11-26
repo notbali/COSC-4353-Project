@@ -193,7 +193,23 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                     >
                       Volunteer Matching
                     </Button>
-                    
+                    <Button
+                      component={Link}
+                      to="/reports"
+                      sx={{
+                        color: "#fff",
+                        marginRight: "10px",
+                        backgroundColor: isActive("/reports")
+                          ? "#184b69ff"
+                          : "inherit",
+                        "&:hover": { backgroundColor: "#184b69ff" },
+                        fontWeight: isActive("/reports")
+                          ? "bold"
+                          : "normal",
+                      }}
+                    >
+                      Reports
+                    </Button>
                   </>
                 )}
                 {/* Links for Regular Users */}
@@ -342,6 +358,24 @@ const Navbar = ({ isLoggedIn, userName, userRole, handleLogout }) => {
                   >
                     <ListItemText
                       primary="Volunteer Matching"
+                      sx={{ color: "#E2DAD6" }}
+                    />
+                  </ListItem>
+                  <ListItem
+                    button
+                    onClick={() => handleNavigation("/admin-dashboard")}
+                  >
+                    <ListItemText
+                      primary="Admin Dashboard"
+                      sx={{ color: "#E2DAD6" }}
+                    />
+                  </ListItem>
+                  <ListItem
+                    button
+                    onClick={() => handleNavigation("/reports")}
+                  >
+                    <ListItemText
+                      primary="Reports"
                       sx={{ color: "#E2DAD6" }}
                     />
                   </ListItem>

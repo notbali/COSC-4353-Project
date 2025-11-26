@@ -19,12 +19,40 @@ const matchRoutes = require('./routes/match');
 const profileRoutes = require('./routes/profile');
 const eventRoutes = require('./routes/eventRoutes');
 const notifsRoutes = require('./routes/notifsRoutes');
+const reportRoutes = require('./routes/reports');
 app.use('/api', volunteerRoutes);
 app.use('/api', matchRoutes);
 app.use('/api', profileRoutes);
-// Mount events and notifications under /api/events and /api/notifs
 app.use('/api/events', eventRoutes);
-app.use('/api/notifs', notifsRoutes);
+app.use('/api/reports', reportRoutes);
+
+const buildProfileDefaults = (payload = {}) => {
+  const {
+    fullName,
+    firstName,
+    lastName,
+    address1,
+    address2,
+    city,
+    state,
+    zip
+  } = payload;
+
+  const resolvedFullName = (fullName || [firstName, lastName].filter(Boolean).join(' ')).trim();
+  const resolvedAddress = (address1 || address2 || '').trim();
+  const resolvedCity = (city || '').trim();
+  const resolvedState = (state || '').trim().slice(0, 2).toUpperCase();
+  const resolvedZip = (zip || '').trim();
+
+  return {
+    fullName: resolvedFullName || 'New User',
+    address1: (address1 || '').trim(),
+    address2: (address2 || '').trim(),
+    city: resolvedCity || 'Unknown City',
+    state: resolvedState || 'NA',
+    zip: resolvedZip || '00000'
+  };
+};
 
 // Registration route
 app.post('/api/register', async (req, res) => {
