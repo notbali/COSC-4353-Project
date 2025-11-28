@@ -1,41 +1,52 @@
+jest.mock("supertest");
 const request = require("supertest");
 const express = require("express");
 const eventRoutes = require("../routes/eventRoutes");
 
+jest.mock("../models/VolunteerHistory", () => ({
+  find: jest.fn(),
+}));
+
+jest.mock("../models/Notifs", () => ({
+  create: jest.fn(),
+}));
+
 // Mock the Event model properly
 jest.mock("../models/Event", () => {
-  const mockEvent = function(data) {
+  const mockEvent = function (data) {
     Object.assign(this, data);
-    this._id = data._id || 'mock-id';
-    
+    this._id = data._id || "mock-id";
+
     // Add toObject method for Mongoose document compatibility
-    this.toObject = function() {
+    this.toObject = function () {
       const { toObject, save, deleteOne, ...rest } = this;
       return rest;
     };
-    
+
     // Add deleteOne method
     this.deleteOne = jest.fn().mockResolvedValue(this);
   };
-  
+
   // Add prototype methods
   mockEvent.prototype.save = jest.fn();
-  mockEvent.prototype.toObject = function() {
+  mockEvent.prototype.toObject = function () {
     const { toObject, save, deleteOne, ...rest } = this;
     return rest;
   };
   mockEvent.prototype.deleteOne = jest.fn();
-  
+
   // Add static methods
   mockEvent.find = jest.fn();
   mockEvent.findById = jest.fn();
   mockEvent.findByIdAndUpdate = jest.fn();
   mockEvent.findByIdAndDelete = jest.fn();
-  
+
   return mockEvent;
 });
 
 const Event = require("../models/Event");
+const VolunteerHistory = require("../models/VolunteerHistory");
+const Notifs = require("../models/Notifs");
 
 const app = express();
 app.use(express.json());
@@ -48,16 +59,18 @@ describe("Event Routes - Full Coverage", () => {
 
   // POST /create tests
   it("should create a new event", async () => {
-    const mockEventData = { 
-      eventName: "Test Event", 
+    const mockEventData = {
+      eventName: "Test Event",
       location: "Test Location",
-      _id: "mock-event-id"
+      _id: "mock-event-id",
     };
-    
+
     // Mock the save method to return the event data
     Event.prototype.save = jest.fn().mockResolvedValue(mockEventData);
 
-    const response = await request(app).post("/events/create").send(mockEventData);
+    const response = await request(app)
+      .post("/events/create")
+      .send(mockEventData);
 
     expect(response.status).toBe(201);
     expect(response.body.message).toBe("Event created successfully");
@@ -66,23 +79,25 @@ describe("Event Routes - Full Coverage", () => {
 
   it("should return 400 if event creation fails with validation error", async () => {
     const validationError = {
-      name: 'ValidationError',
+      name: "ValidationError",
       errors: {
-        eventName: { message: 'Event name is required' }
-      }
+        eventName: { message: "Event name is required" },
+      },
     };
-    
+
     Event.prototype.save = jest.fn().mockRejectedValue(validationError);
 
     const response = await request(app).post("/events/create").send({});
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Validation error');
+    expect(response.body.message).toBe("Validation error");
     expect(response.body.errors).toBeDefined();
   });
 
   it("should return 400 if event creation fails with other error", async () => {
-    Event.prototype.save = jest.fn().mockRejectedValue(new Error("Creation error"));
+    Event.prototype.save = jest
+      .fn()
+      .mockRejectedValue(new Error("Creation error"));
 
     const response = await request(app).post("/events/create").send({});
 
@@ -125,25 +140,25 @@ describe("Event Routes - Full Coverage", () => {
   // GET /all-with-volunteer-count tests
   it("should retrieve events with volunteer counts", async () => {
     const mockEvents = [
-      { 
-        _id: "1", 
-        eventName: "Event 1", 
+      {
+        _id: "1",
+        eventName: "Event 1",
         location: "Location 1",
         currentVolunteers: 5,
-        toObject: function() { 
-          const { toObject, ...rest } = this; 
-          return rest; 
-        }
+        toObject: function () {
+          const { toObject, ...rest } = this;
+          return rest;
+        },
       },
-      { 
-        _id: "2", 
-        eventName: "Event 2", 
+      {
+        _id: "2",
+        eventName: "Event 2",
         location: "Location 2",
         currentVolunteers: 3,
-        toObject: function() { 
-          const { toObject, ...rest } = this; 
-          return rest; 
-        }
+        toObject: function () {
+          const { toObject, ...rest } = this;
+          return rest;
+        },
       },
     ];
     Event.find.mockResolvedValue(mockEvents);
@@ -168,14 +183,14 @@ describe("Event Routes - Full Coverage", () => {
 
   it("should handle events with no volunteers", async () => {
     const mockEvents = [
-      { 
-        _id: "1", 
-        eventName: "Event 1", 
+      {
+        _id: "1",
+        eventName: "Event 1",
         location: "Location 1",
-        toObject: function() { 
-          const { toObject, ...rest } = this; 
-          return rest; 
-        }
+        toObject: function () {
+          const { toObject, ...rest } = this;
+          return rest;
+        },
       },
     ];
     Event.find.mockResolvedValue(mockEvents);
@@ -271,14 +286,56 @@ describe("Event Routes - Full Coverage", () => {
     expect(response.body.message).toBe("Error updating event");
   });
 
+  it("notifies volunteers on update", async () => {
+    const updatedEvent = {
+      _id: "1",
+      eventName: "Updated Event",
+      eventDescription: "Desc",
+      location: "Loc",
+      eventDate: "2025-01-01",
+    };
+    Event.findByIdAndUpdate.mockResolvedValue(updatedEvent);
+    VolunteerHistory.find.mockResolvedValue([
+      { userId: "u1" },
+      { userId: "u2" },
+    ]);
+    Notifs.create.mockResolvedValue({ _id: "notif" });
+
+    const response = await request(app)
+      .put("/events/update/1")
+      .send(updatedEvent);
+
+    expect(response.status).toBe(200);
+    expect(Notifs.create).toHaveBeenCalledTimes(2);
+    expect(Notifs.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user: "u1",
+        title: expect.stringContaining("updated"),
+      })
+    );
+  });
+
+  it("handles history fetch errors during update notifications", async () => {
+    const updatedEvent = { _id: "1", eventName: "Updated Event" };
+    Event.findByIdAndUpdate.mockResolvedValue(updatedEvent);
+    VolunteerHistory.find.mockRejectedValue(new Error("history error"));
+
+    const response = await request(app)
+      .put("/events/update/1")
+      .send(updatedEvent);
+
+    expect(response.status).toBe(200);
+    expect(Notifs.create).not.toHaveBeenCalled();
+  });
+
   it("should return 400 if updating event fails with validation error", async () => {
     const validationError = {
-      name: 'ValidationError',
+      name: "ValidationError",
       errors: {
-        eventName: { message: 'Event name is required' }
-      }
+        eventName: { message: "Event name is required" },
+      },
     };
-    
+
     Event.findByIdAndUpdate.mockRejectedValue(validationError);
 
     const response = await request(app).put("/events/update/1").send({
@@ -286,7 +343,7 @@ describe("Event Routes - Full Coverage", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Validation error');
+    expect(response.body.message).toBe("Validation error");
     expect(response.body.errors).toBeDefined();
   });
 
@@ -309,10 +366,10 @@ describe("Event Routes - Full Coverage", () => {
 
   // DELETE /delete/:id tests
   it("should delete an event by ID", async () => {
-    const mockEvent = { 
-      _id: "1", 
+    const mockEvent = {
+      _id: "1",
       eventName: "Event to Delete",
-      deleteOne: jest.fn().mockResolvedValue()
+      deleteOne: jest.fn().mockResolvedValue(),
     };
     Event.findById.mockResolvedValue(mockEvent);
 
@@ -345,6 +402,46 @@ describe("Event Routes - Full Coverage", () => {
     );
   });
 
+  it("creates notifications for volunteers and global on delete", async () => {
+    const mockEvent = {
+      _id: "1",
+      eventName: "Event with Data",
+      eventDescription: "Desc",
+      location: "Loc",
+      eventDate: "2025-01-01",
+      deleteOne: jest.fn().mockResolvedValue(),
+    };
+    Event.findById.mockResolvedValue(mockEvent);
+    VolunteerHistory.find.mockResolvedValue([
+      { userId: "u1" },
+      { userId: "u2" },
+    ]);
+    Notifs.create.mockResolvedValue({ _id: "notif" });
+
+    const response = await request(app).delete("/events/delete/1");
+
+    expect(response.status).toBe(200);
+    // two per-user + one global
+    expect(Notifs.create).toHaveBeenCalledTimes(3);
+    expect(mockEvent.deleteOne).toHaveBeenCalled();
+  });
+
+  it("handles history fetch errors on delete but still deletes event", async () => {
+    const mockEvent = {
+      _id: "1",
+      eventName: "Event to delete",
+      deleteOne: jest.fn().mockResolvedValue(),
+    };
+    Event.findById.mockResolvedValue(mockEvent);
+    VolunteerHistory.find.mockRejectedValue(new Error("history error"));
+
+    const response = await request(app).delete("/events/delete/1");
+
+    expect(response.status).toBe(200);
+    expect(mockEvent.deleteOne).toHaveBeenCalled();
+    expect(Notifs.create).not.toHaveBeenCalled();
+  });
+
   it("should handle deletion of event with associated data", async () => {
     const mockEvent = {
       _id: "1",
@@ -366,7 +463,9 @@ describe("Event Routes - Full Coverage", () => {
     const mockEvent = {
       _id: "1",
       eventName: "Event with Data",
-      deleteOne: jest.fn().mockRejectedValue(new Error("Delete middleware error")),
+      deleteOne: jest
+        .fn()
+        .mockRejectedValue(new Error("Delete middleware error")),
     };
     Event.findById.mockResolvedValue(mockEvent);
 
@@ -397,7 +496,7 @@ describe("Event Routes - Full Coverage", () => {
   it("should handle event creation with all required fields", async () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7); // 7 days in the future
-    
+
     const completeEventInput = {
       eventName: "Complete Event",
       eventDescription: "A complete description",
@@ -405,9 +504,9 @@ describe("Event Routes - Full Coverage", () => {
       requiredSkills: ["JavaScript", "Node.js"],
       urgency: "High",
       eventDate: futureDate,
-      eventDateISO: futureDate.toISOString().split('T')[0]
+      eventDateISO: futureDate.toISOString().split("T")[0],
     };
-    
+
     const completeEventResponse = {
       _id: "complete-event-id",
       eventName: "Complete Event",
@@ -416,9 +515,9 @@ describe("Event Routes - Full Coverage", () => {
       requiredSkills: ["JavaScript", "Node.js"],
       urgency: "High",
       eventDate: futureDate.toISOString(), // Date will be serialized as string in HTTP response
-      eventDateISO: futureDate.toISOString().split('T')[0]
+      eventDateISO: futureDate.toISOString().split("T")[0],
     };
-    
+
     Event.prototype.save = jest.fn().mockResolvedValue(completeEventResponse);
 
     const response = await request(app)
@@ -432,7 +531,7 @@ describe("Event Routes - Full Coverage", () => {
       location: "Complete Location",
       requiredSkills: ["JavaScript", "Node.js"],
       urgency: "High",
-      eventDateISO: futureDate.toISOString().split('T')[0]
+      eventDateISO: futureDate.toISOString().split("T")[0],
     });
     // Test that eventDate exists but don't match exact format since it could be string or Date
     expect(response.body.data.eventDate).toBeDefined();

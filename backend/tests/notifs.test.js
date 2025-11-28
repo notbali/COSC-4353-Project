@@ -1,9 +1,18 @@
 // notifs.test.js
+jest.mock("supertest");
 const request = require("supertest");
 const express = require("express");
 const Notifs = require("../models/Notifs");
 const Event = require("../models/Event");
 const router = require("../routes/notifsRoutes");
+jest.mock(
+  "pdfkit",
+  () =>
+    function PDF() {
+      return { text: () => {}, pipe: () => {}, end: () => {} };
+    },
+  { virtual: true }
+);
 
 jest.mock("../models/Notifs");
 jest.mock("../models/Event");
@@ -30,6 +39,11 @@ function mockFindChain({ result, reject = false }) {
 describe("Notifications Routes - Full Coverage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    Notifs.create = jest.fn();
+    Notifs.findByIdAndUpdate = jest.fn();
+    Notifs.updateMany = jest.fn();
+    Notifs.find = jest.fn();
+    Event.findById = jest.fn();
   });
 
   // POST /create
@@ -125,7 +139,33 @@ describe("Notifications Routes - Full Coverage", () => {
     const res = await request(app).post("/notifs/create").send({});
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe(
-      "Event ID, notification type, and user ID are required."
+      "Event ID and notification type are required."
+    );
+  });
+
+  it("creates a global notification when userId is omitted", async () => {
+    const mockEvent = {
+      _id: "2",
+      eventName: "Global Event",
+      eventDescription: "Desc",
+      location: "Loc",
+      eventDate: "2025-01-01",
+    };
+    Event.findById.mockResolvedValue(mockEvent);
+    Notifs.create.mockResolvedValue({ _id: "n-global" });
+
+    const res = await request(app)
+      .post("/notifs/create")
+      .send({ eventId: "2", notifType: "new event" });
+
+    expect(res.statusCode).toBe(201);
+    expect(Notifs.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "2",
+        title: "A New Event Has Been Posted!",
+        eventName: "Global Event",
+        location: "Loc",
+      })
     );
   });
 
@@ -134,6 +174,20 @@ describe("Notifications Routes - Full Coverage", () => {
     const res = await request(app)
       .post("/notifs/create")
       .send({ eventId: "1", notifType: "new event", userId: "u1" });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toBe(
+      "An error occurred while creating the notification."
+    );
+  });
+
+  it("returns 500 if Notifs.create fails after event lookup", async () => {
+    Event.findById.mockResolvedValue({ _id: "1", eventName: "FailCreate" });
+    Notifs.create.mockRejectedValue(new Error("create error"));
+
+    const res = await request(app)
+      .post("/notifs/create")
+      .send({ eventId: "1", notifType: "reminder", userId: "u1" });
 
     expect(res.statusCode).toBe(500);
     expect(res.body.message).toBe(
@@ -200,6 +254,77 @@ describe("Notifications Routes - Full Coverage", () => {
     expect(res.body.message).toBe(
       "An error occurred while creating the notification."
     );
+  });
+
+  // POST /dismiss
+  it("dismisses a single notification", async () => {
+    Notifs.findByIdAndUpdate.mockResolvedValue({ _id: "n1" });
+    const res = await request(app).post("/notifs/dismiss").send({
+      notifId: "n1",
+      userId: "u1",
+    });
+    expect(res.statusCode).toBe(200);
+    expect(Notifs.findByIdAndUpdate).toHaveBeenCalledWith("n1", {
+      $addToSet: { dismissedBy: "u1" },
+    });
+    expect(res.body.message).toBe("Notification dismissed");
+  });
+
+  it("returns 400 when dismiss payload missing fields", async () => {
+    const res = await request(app).post("/notifs/dismiss").send({});
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toMatch(/notifId and userId are required/);
+  });
+
+  it("returns 500 when dismiss update fails", async () => {
+    Notifs.findByIdAndUpdate.mockRejectedValue(new Error("dismiss error"));
+    const res = await request(app)
+      .post("/notifs/dismiss")
+      .send({ notifId: "n1", userId: "u1" });
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toMatch(/Error dismissing notification/);
+  });
+
+  // POST /dismiss-all
+  it("dismisses specific notifications when ids provided", async () => {
+    Notifs.updateMany.mockResolvedValue({ modifiedCount: 2 });
+    const res = await request(app)
+      .post("/notifs/dismiss-all")
+      .send({ userId: "u1", notifIds: ["n1", "n2"] });
+    expect(res.statusCode).toBe(200);
+    expect(Notifs.updateMany).toHaveBeenCalledWith(
+      { _id: { $in: ["n1", "n2"] } },
+      { $addToSet: { dismissedBy: "u1" } }
+    );
+    expect(res.body.modifiedCount).toBe(2);
+  });
+
+  it("dismisses all visible notifications when ids omitted", async () => {
+    Notifs.updateMany.mockResolvedValue({ modifiedCount: 5 });
+    const res = await request(app)
+      .post("/notifs/dismiss-all")
+      .send({ userId: "u2" });
+    expect(res.statusCode).toBe(200);
+    expect(Notifs.updateMany).toHaveBeenCalledWith(
+      { $or: [{ user: "u2" }, { user: { $exists: false } }, { user: null }] },
+      { $addToSet: { dismissedBy: "u2" } }
+    );
+    expect(res.body.modifiedCount).toBe(5);
+  });
+
+  it("returns 400 when dismiss-all missing userId", async () => {
+    const res = await request(app).post("/notifs/dismiss-all").send({});
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe("userId is required");
+  });
+
+  it("returns 500 when dismiss-all update fails", async () => {
+    Notifs.updateMany.mockRejectedValue(new Error("update error"));
+    const res = await request(app)
+      .post("/notifs/dismiss-all")
+      .send({ userId: "u3" });
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toMatch(/Error dismissing notifications/);
   });
 
   // POST /matched
@@ -278,7 +403,19 @@ describe("Notifications Routes - Full Coverage", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual(mockNotifications);
-    expect(Notifs.find).toHaveBeenCalledWith({ user: "u123" });
+    expect(Notifs.find).toHaveBeenCalledWith({
+      $and: [
+        {
+          $or: [{ user: "u123" }, { user: { $exists: false } }, { user: null }],
+        },
+        {
+          $or: [
+            { dismissedBy: { $exists: false } },
+            { dismissedBy: { $ne: "u123" } },
+          ],
+        },
+      ],
+    });
     expect(populate).toHaveBeenCalledWith(
       "event",
       "eventName eventDate location eventDescription"
