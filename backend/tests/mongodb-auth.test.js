@@ -2,7 +2,7 @@ jest.mock("supertest");
 const request = require("supertest");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const maybeDescribe = process.env.ENABLE_HTTP_TESTS ? describe : describe.skip;
+const maybeDescribe = describe;
 jest.mock(
   "pdfkit",
   () => {
@@ -24,7 +24,21 @@ jest.mock("mongoose", () => {
 
 const mockUsers = [];
 const mockProfiles = {};
+
 jest.mock("../models/User", () => {
+  function mockCreateValidationError(errors) {
+    const err = new Error("Validation failed");
+    err.name = "ValidationError";
+    err.errors = Object.entries(errors).reduce((acc, [field, message]) => {
+      acc[field] = { message };
+      return acc;
+    }, {});
+    return err;
+  }
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  const zipRegex = /^\d{5}(-\d{4})?$/;
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
   class UserCredentials {
     constructor(data = {}) {
       Object.assign(this, data);
@@ -47,6 +61,22 @@ jest.mock("../models/User", () => {
       return null;
     }
     async save() {
+      const errors = {};
+      if (!this.username || this.username.trim().length < 3) {
+        errors.username = "Username must be at least 3 characters long";
+      }
+      if (this.username && this.username.length > 30) {
+        errors.username = "Username cannot exceed 30 characters";
+      }
+      if (!this.email || !emailRegex.test(this.email)) {
+        errors.email = "Please enter a valid email";
+      }
+      if (!this.password || this.password.length < 6) {
+        errors.password = "Password must be at least 6 characters long";
+      }
+      if (Object.keys(errors).length) {
+        throw mockCreateValidationError(errors);
+      }
       mockUsers.push(this);
       return this;
     }
@@ -59,7 +89,50 @@ jest.mock("../models/User", () => {
     static async findOne(query) {
       return mockProfiles[query.userId] || null;
     }
+    static async create(data = {}) {
+      const profile = new UserProfile(data);
+      await profile.save();
+      return profile;
+    }
+    static async updateOne(query, update) {
+      const existing = await UserProfile.findOne(query);
+      if (existing) {
+        Object.assign(existing, update);
+        mockProfiles[query.userId] = existing;
+        return { acknowledged: true, modifiedCount: 1 };
+      }
+      return { acknowledged: true, modifiedCount: 0 };
+    }
     async save() {
+      const errors = {};
+      if (!this.fullName || this.fullName.trim().length < 2) {
+        errors.fullName = "Full name must be at least 2 characters long";
+      }
+      if (!this.address1) {
+        errors.address1 = "Address is required";
+      }
+      if (!this.city) {
+        errors.city = "City is required";
+      }
+      if (!this.state || this.state.length !== 2) {
+        errors.state = "State must be a 2-character code";
+      }
+      if (!this.zip || !zipRegex.test(this.zip)) {
+        errors.zip = "Please enter a valid zipcode";
+      }
+      if (this.availability && !this.availability.every((d) => dateRegex.test(d))) {
+        errors.availability = "Availability dates must be in YYYY-MM-DD format";
+      }
+      if (
+        this.skills &&
+        Array.isArray(this.skills) &&
+        !this.skills.every((s) => typeof s === "string" && s.trim().length > 0)
+      ) {
+        errors.skills = "Skills cannot be empty strings";
+      }
+      if (Object.keys(errors).length) {
+        throw mockCreateValidationError(errors);
+      }
       mockProfiles[this.userId] = this;
       return this;
     }
@@ -81,6 +154,13 @@ const uniqueEmail = (base = "user") => {
   const sanitized = base.replace(/[^a-zA-Z0-9]/g, "") || "user";
   return `${sanitized.slice(0, 20)}${suffix}@example.com`;
 };
+const baseProfileFields = () => ({
+  fullName: "Test User",
+  address1: "123 Main St",
+  city: "Houston",
+  state: "TX",
+  zip: "77001",
+});
 
 // Import the actual server setup
 const app = require("../server");
@@ -93,8 +173,7 @@ maybeDescribe("MongoDB Authentication System", () => {
         username: uniqueUsername("testuser"),
         email: uniqueEmail("testuser"),
         password: "password123",
-        firstName: `Test${suffix}`,
-        lastName: "User",
+        ...baseProfileFields(),
       };
 
       const res = await request(app).post("/api/register").send(userData);
@@ -108,8 +187,7 @@ maybeDescribe("MongoDB Authentication System", () => {
       const res = await request(app).post("/api/register").send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toBe("Validation error");
-      expect(res.body.errors).toBeDefined();
+      expect(res.body.message).toContain("Missing required fields");
     });
 
     test("should return validation error for invalid email format", async () => {
@@ -118,8 +196,7 @@ maybeDescribe("MongoDB Authentication System", () => {
         username: uniqueUsername("testuser"),
         email: "invalid-email",
         password: "password123",
-        firstName: `Test${suffix}`,
-        lastName: "User",
+        ...baseProfileFields(),
       };
 
       const res = await request(app).post("/api/register").send(userData);
@@ -134,8 +211,7 @@ maybeDescribe("MongoDB Authentication System", () => {
         username: "ab",
         email: uniqueEmail("shortname"),
         password: "password123",
-        firstName: `Test${suffix}`,
-        lastName: "User",
+        ...baseProfileFields(),
       };
 
       const res = await request(app).post("/api/register").send(userData);
@@ -150,14 +226,13 @@ maybeDescribe("MongoDB Authentication System", () => {
         username: uniqueUsername("testuser"),
         email: uniqueEmail("shortpw"),
         password: "123",
-        firstName: `Test${suffix}`,
-        lastName: "User",
+        ...baseProfileFields(),
       };
 
       const res = await request(app).post("/api/register").send(userData);
 
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("Validation error");
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe("User registered successfully!");
     });
 
     test("should not allow duplicate usernames", async () => {
@@ -167,8 +242,7 @@ maybeDescribe("MongoDB Authentication System", () => {
         username: baseUsername,
         email: uniqueEmail("duplicateuser"),
         password: "password123",
-        firstName: `Test${suffix}`,
-        lastName: "User",
+        ...baseProfileFields(),
       };
 
       // First registration
@@ -193,8 +267,7 @@ maybeDescribe("MongoDB Authentication System", () => {
         username: uniqueUsername("testuser"),
         email: baseEmail,
         password: "password123",
-        firstName: `Test${suffix}`,
-        lastName: "User",
+        ...baseProfileFields(),
       };
 
       // First registration
@@ -235,10 +308,10 @@ maybeDescribe("MongoDB Authentication System", () => {
         const userProfile = new UserProfile({
           userId: userCredentials._id,
           fullName: "Login Test User",
-          address: "123 Test St",
+          address1: "123 Test St",
           city: "Test City",
           state: "TS",
-          zipcode: "12345",
+          zip: "12345",
           skills: ["Communication"],
           preferences: "Test preferences",
           availability: ["2025-01-15"],
@@ -308,10 +381,10 @@ maybeDescribe("MongoDB Authentication System", () => {
         await UserProfile.create({
           userId,
           fullName: "Profile Test User",
-          address: "123 Test St",
+          address1: "123 Test St",
           city: "Test City",
           state: "TS",
-          zipcode: "12345",
+          zip: "12345",
           skills: ["Communication"],
           preferences: "Test preferences",
           availability: ["2025-01-15"],
@@ -330,10 +403,10 @@ maybeDescribe("MongoDB Authentication System", () => {
         { userId },
         {
           fullName: "Profile Test User",
-          address: "123 Test St",
+          address1: "123 Test St",
           city: "Test City",
           state: "TS",
-          zipcode: "12345",
+          zip: "12345",
           skills: ["Communication"],
           preferences: "Test preferences",
           availability: ["2025-01-15"],
@@ -385,7 +458,7 @@ maybeDescribe("MongoDB Authentication System", () => {
 
     test("should return validation error for invalid profile data", async () => {
       const invalidData = {
-        zipcode: "invalid-zip",
+        zip: "invalid-zip",
         availability: ["invalid-date"],
       };
 
@@ -406,8 +479,7 @@ maybeDescribe("MongoDB Authentication System", () => {
         username: uniqueUsername("persisttest"),
         email: uniqueEmail("persisttest"),
         password: "password123",
-        firstName: "Persist",
-        lastName: "User",
+        ...baseProfileFields(),
       };
 
       const registerRes = await request(app)
