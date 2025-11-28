@@ -200,8 +200,12 @@ router.get('/events/csv', authenticate, async (req, res) => {
       
       const volunteerNames = await Promise.all(
         volunteerHistories.map(async (history) => {
-          const userProfile = await UserProfile.findOne({ userId: history.userId._id });
-          return userProfile ? userProfile.fullName : history.volunteerName;
+          if (!history.userId) {
+            return history.volunteerName || '';
+          }
+          const uid = history.userId._id ? history.userId._id : history.userId;
+          const userProfile = await UserProfile.findOne({ userId: uid });
+          return userProfile ? userProfile.fullName : (history.volunteerName || '');
         })
       );
       
@@ -317,8 +321,12 @@ router.get('/events/pdf', authenticate, async (req, res) => {
       
       const assignedVolunteers = await Promise.all(
         volunteerHistories.map(async (history) => {
-          const userProfile = await UserProfile.findOne({ userId: history.userId._id });
-          return userProfile ? userProfile.fullName : history.volunteerName;
+          if (!history.userId) {
+            return history.volunteerName || '';
+          }
+          const uid = history.userId._id ? history.userId._id : history.userId;
+          const userProfile = await UserProfile.findOne({ userId: uid });
+          return userProfile ? userProfile.fullName : (history.volunteerName || '');
         })
       );
       
